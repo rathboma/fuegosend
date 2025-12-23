@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_23_202022) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_23_214802) do
   create_table "accounts", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "aws_region", default: "us-east-1"
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_23_202022) do
     t.integer "ses_max_send_rate", default: 1
     t.datetime "ses_quota_reset_at"
     t.integer "ses_sent_last_24_hours", default: 0
+    t.boolean "setup_completed", default: false, null: false
     t.string "subdomain", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_accounts_on_active"

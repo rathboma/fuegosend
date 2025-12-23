@@ -19,6 +19,11 @@ class AccountsController < ApplicationController
   def update
     @account = current_account
 
+    # Attach logo if provided
+    if params[:account] && params[:account][:logo].present?
+      @account.logo.attach(params[:account][:logo])
+    end
+
     if @account.update(account_params)
       # Test SES connection if credentials were updated
       if account_params[:aws_access_key_id].present? || account_params[:aws_secret_access_key].present?

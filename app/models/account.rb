@@ -11,6 +11,9 @@ class Account < ApplicationRecord
   has_many :webhook_endpoints, dependent: :destroy
   has_many :webhook_events, dependent: :destroy
 
+  # Logo attachment
+  has_one_attached :logo
+
   # Encryption for AWS credentials
   encrypts :aws_access_key_id
   encrypts :aws_secret_access_key
@@ -18,6 +21,23 @@ class Account < ApplicationRecord
   validates :name, presence: true
   validates :subdomain, presence: true, uniqueness: true,
             format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
+
+  # Check if setup is complete
+  def setup_complete?
+    setup_completed && name.present? && subdomain.present? && aws_credentials_configured?
+  end
+
+  def aws_credentials_configured?
+    aws_access_key_id.present? && aws_secret_access_key.present? && aws_region.present?
+  end
+
+  def logo_url
+    if logo.attached?
+      Rails.application.routes.url_helpers.rails_blob_url(logo, only_path: false)
+    else
+      brand_logo # Fallback to URL field
+    end
+  end
 
   # Check if account can send emails
   def can_send_email?

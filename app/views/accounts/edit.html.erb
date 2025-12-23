@@ -40,12 +40,22 @@
         </div>
 
         <div class="mb-4">
-          <%= f.label :brand_logo, "Brand Logo URL", class: "form-label" %>
-          <%= f.text_field :brand_logo, class: "form-control", placeholder: "https://example.com/logo.png" %>
-          <small class="text-muted">Optional: Enter the URL to your brand logo (will appear in email templates)</small>
-          <% if @account.brand_logo.present? %>
+          <%= f.label :logo, "Brand Logo", class: "form-label" %>
+          <%= f.file_field :logo, accept: "image/*", class: "form-control" %>
+          <small class="text-muted">Upload your company logo (PNG, JPG, or GIF. Recommended size: 200x80px)</small>
+          <% if @account.logo.attached? %>
             <div class="mt-2">
-              <img src="<%= @account.brand_logo %>" alt="Brand Logo Preview" style="max-width: 200px; max-height: 80px;" class="border p-2 bg-light">
+              <label class="form-label small">Current Logo</label>
+              <div class="border p-2 bg-light d-inline-block">
+                <img src="<%= @account.logo_url %>" alt="Brand Logo" style="max-width: 200px; max-height: 80px;">
+              </div>
+            </div>
+          <% elsif @account.brand_logo.present? %>
+            <div class="mt-2">
+              <label class="form-label small">Current Logo (URL)</label>
+              <div class="border p-2 bg-light d-inline-block">
+                <img src="<%= @account.brand_logo %>" alt="Brand Logo" style="max-width: 200px; max-height: 80px;">
+              </div>
             </div>
           <% end %>
         </div>

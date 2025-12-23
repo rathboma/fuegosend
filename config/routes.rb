@@ -29,6 +29,10 @@ Rails.application.routes.draw do
     root to: "dashboard#index", as: :authenticated_root
     get "dashboard", to: "dashboard#index"
 
+    # Account setup wizard
+    get "setup", to: "setup#show"
+    post "setup", to: "setup#update"
+
     resources :lists
     resources :subscribers do
       collection do
