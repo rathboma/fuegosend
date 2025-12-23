@@ -18,7 +18,30 @@
   <% end %>
 </div>
 
-<div class="row g-4">
+<%
+  # Get template HTML for the editor
+  template_html = ""
+  if campaign.template_id
+    template = @templates.find_by(id: campaign.template_id)
+    if template
+      template_html = template.html_content || template.markdown_content || ""
+    end
+  end
+
+  # Get values for merge tag preview
+  logo_url = campaign.account&.brand_logo.presence || "/logo-placeholder.png"
+  account_name = campaign.account&.name || "Your Company"
+  campaign_name = campaign.name || "Campaign Name"
+  campaign_subject = campaign.subject || "Email Subject"
+%>
+
+<div class="row g-4"
+     data-controller="markdown-editor"
+     data-markdown-editor-template-value="<%= template_html.gsub('"', '&quot;').gsub("\n", ' ') %>"
+     data-markdown-editor-logo-url-value="<%= logo_url %>"
+     data-markdown-editor-account-name-value="<%= account_name %>"
+     data-markdown-editor-campaign-name-value="<%= campaign_name %>"
+     data-markdown-editor-campaign-subject-value="<%= campaign_subject %>">
   <!-- Markdown Editor (Left) -->
   <div class="col-md-6">
     <div class="mb-2">
@@ -27,8 +50,8 @@
     </div>
     <div class="card border">
       <div class="card-body p-0">
-        <%= f.text_area :body_markdown, class: "d-none", id: "campaign_body_markdown" %>
-        <textarea id="markdown-editor" style="display: none;"><%= campaign.body_markdown %></textarea>
+        <%= f.text_area :body_markdown, class: "d-none", data: { markdown_editor_target: "hiddenField" } %>
+        <textarea data-markdown-editor-target="textarea" style="display: none;"><%= campaign.body_markdown %></textarea>
       </div>
     </div>
     <div class="mt-2">
@@ -51,7 +74,7 @@
       <small class="text-muted ms-2">How it will look to subscribers</small>
     </div>
     <div class="card border">
-      <div class="card-body" style="min-height: 600px; max-height: 600px; overflow-y: auto;" id="email-preview">
+      <div class="card-body" style="min-height: 600px; max-height: 600px; overflow-y: auto;" data-markdown-editor-target="preview">
         <div class="text-muted text-center py-5">
           Loading preview...
         </div>
@@ -70,123 +93,6 @@
   <%= f.submit "Continue to Review →", class: "btn btn-primary" %>
 </div>
 
-<script>
-(function() {
-  function initializeCodeMirror() {
-    // Check if already initialized
-    if (document.querySelector('.CodeMirror')) {
-      return;
-    }
-
-    // Initialize CodeMirror
-    const textarea = document.getElementById('markdown-editor');
-    const hiddenField = document.getElementById('campaign_body_markdown');
-    const previewPane = document.getElementById('email-preview');
-
-    if (!textarea || !hiddenField || !previewPane) {
-      return;
-    }
-
-    const editor = CodeMirror.fromTextArea(textarea, {
-      mode: 'markdown',
-      theme: 'monokai',
-      lineNumbers: true,
-      lineWrapping: true,
-      viewportMargin: Infinity,
-      height: '600px'
-    });
-
-    editor.setSize(null, '600px');
-
-    // Get template content
-    const templateId = document.getElementById('campaign_template_id')?.value;
-    let templateHtml = '';
-
-    <% if campaign.template_id %>
-      <% template = @templates.find_by(id: campaign.template_id) %>
-      <% if template %>
-        templateHtml = `<%= raw template.html_content&.gsub('`', '\`') || template.markdown_content&.gsub('`', '\`') || '' %>`;
-      <% end %>
-    <% end %>
-
-    // Function to update preview
-    function updatePreview() {
-      const markdown = editor.getValue();
-      const html = marked.parse(markdown);
-
-      // Sync with hidden field
-      hiddenField.value = markdown;
-
-      // Apply template if available
-      let finalHtml = html;
-      if (templateHtml) {
-        // Wrap content in email-content div for proper styling
-        const wrappedContent = html;
-
-        // Replace content placeholders in template (both double and triple braces for raw HTML)
-        finalHtml = templateHtml
-          .replace(/\{\{\{content\}\}\}/g, wrappedContent)
-          .replace(/\{\{\{body\}\}\}/g, wrappedContent)
-          .replace(/\{\{\{email_content\}\}\}/g, wrappedContent)
-          .replace(/\{\{content\}\}/g, wrappedContent)
-          .replace(/\{\{body\}\}/g, wrappedContent)
-          .replace(/\{\{email_content\}\}/g, wrappedContent);
-      } else {
-        // No template, wrap in simple container
-        finalHtml = '<div style="max-width: 600px; margin: 0 auto; padding: 20px;">' + html + '</div>';
-      }
-
-      // Get logo URL with fallback to placeholder
-      const logoUrl = '<%= @campaign.account.brand_logo.presence if @campaign.persisted? %>' || '/logo-placeholder.png';
-
-      // Replace example merge tags for preview
-      finalHtml = finalHtml
-        .replace(/\{\{email\}\}/g, 'subscriber@example.com')
-        .replace(/\{\{custom_(\w+)\}\}/g, 'John Doe')
-        .replace(/\{\{name\}\}/g, 'John Doe')
-        .replace(/\{\{first_name\}\}/g, 'John')
-        .replace(/\{\{last_name\}\}/g, 'Doe')
-        .replace(/\{\{unsubscribe_url\}\}/g, '#unsubscribe')
-        .replace(/\{\{campaign_name\}\}/g, document.getElementById('campaign_name')?.value || 'Campaign Name')
-        .replace(/\{\{campaign_subject\}\}/g, document.getElementById('campaign_subject')?.value || 'Email Subject')
-        .replace(/\{\{account_name\}\}/g, '<%= @campaign.account.name if @campaign.persisted? %>' || 'Your Company')
-        .replace(/\{\{logo_url\}\}/g, logoUrl)
-        .replace(/\{\{current_year\}\}/g, new Date().getFullYear());
-
-      previewPane.innerHTML = finalHtml;
-    }
-
-    // Update preview on change
-    editor.on('change', function() {
-      updatePreview();
-    });
-
-    // Initial preview
-    updatePreview();
-
-    // Update preview before form submit
-    const form = document.getElementById('campaign-form');
-    if (form) {
-      form.addEventListener('submit', function() {
-        hiddenField.value = editor.getValue();
-      });
-    }
-  }
-
-  // Initialize on both DOMContentLoaded and turbo:load
-  document.addEventListener('DOMContentLoaded', initializeCodeMirror);
-  document.addEventListener('turbo:load', initializeCodeMirror);
-
-  // Also try to initialize immediately if DOM is already loaded
-  if (document.readyState === 'loading') {
-    // Document still loading, event listeners will handle it
-  } else {
-    // DOM already loaded
-    initializeCodeMirror();
-  }
-})();
-</script>
-
 <style>
 .CodeMirror {
   border: 1px solid #dee2e6;
@@ -198,27 +104,29 @@
   min-height: 600px;
 }
 
-#email-preview {
+[data-markdown-editor-target="preview"] {
   background: #f4f4f4;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   padding: 20px;
 }
 
-#email-preview h1, #email-preview h2, #email-preview h3 {
+[data-markdown-editor-target="preview"] h1,
+[data-markdown-editor-target="preview"] h2,
+[data-markdown-editor-target="preview"] h3 {
   margin-top: 1rem;
   margin-bottom: 0.5rem;
 }
 
-#email-preview p {
+[data-markdown-editor-target="preview"] p {
   margin-bottom: 1rem;
 }
 
-#email-preview a {
+[data-markdown-editor-target="preview"] a {
   color: #4CAF50;
   text-decoration: none;
 }
 
-#email-preview a:hover {
+[data-markdown-editor-target="preview"] a:hover {
   text-decoration: underline;
 }
 </style>

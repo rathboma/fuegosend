@@ -144,8 +144,40 @@ Custom attributes are flattened for easier access:
 
 ## Turbo Compatibility
 
-### JavaScript Initialization Pattern
-Must handle both page load and Turbo navigation:
+### Stimulus Controllers (Preferred)
+**Use Stimulus for complex JavaScript interactions** - it handles Turbo lifecycle automatically:
+
+```javascript
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static targets = ["editor", "preview"]
+  static values = { config: Object }
+
+  connect() {
+    // Called when element appears in DOM (Turbo-safe)
+    this.initializeEditor()
+  }
+
+  disconnect() {
+    // Called when element leaves DOM (cleanup)
+    if (this.editor) {
+      this.editor.toTextArea()
+      this.editor = null
+    }
+  }
+}
+```
+
+**Benefits:**
+- Automatic Turbo lifecycle management
+- Proper cleanup on navigation
+- No double initialization issues
+- State scoped to controller instance
+- Data passing via values and targets
+
+### Inline JavaScript Pattern (Legacy)
+Only use for simple, one-off scripts. Must handle both page load and Turbo navigation:
 
 ```javascript
 (function() {
@@ -169,14 +201,14 @@ Must handle both page load and Turbo navigation:
 })();
 ```
 
-### Why This Pattern?
+**Why This Pattern?**
 - `DOMContentLoaded` - Fires on full page loads
 - `turbo:load` - Fires on Turbo navigation
 - Immediate check - Handles cases where script loads after DOM ready
 - IIFE wrapper - Avoids global namespace pollution
 - Idempotency check - Prevents double initialization
 
-## CodeMirror Integration
+## CodeMirror Integration with Stimulus
 
 ### Setup
 ```html
@@ -189,30 +221,78 @@ Must handle both page load and Turbo navigation:
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
 ```
 
-### Configuration
+### Controller Implementation
 ```javascript
-const editor = CodeMirror.fromTextArea(textarea, {
-  mode: 'markdown',
-  theme: 'monokai',
-  lineNumbers: true,
-  lineWrapping: true,
-  viewportMargin: Infinity,
-  height: '600px'
-});
+// app/javascript/controllers/markdown_editor_controller.js
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  static targets = ["textarea", "hiddenField", "preview"]
+  static values = {
+    template: String,
+    logoUrl: String
+  }
+
+  connect() {
+    this.waitForCodeMirror().then(() => {
+      this.initializeEditor()
+    })
+  }
+
+  disconnect() {
+    if (this.editor) {
+      this.editor.toTextArea()
+      this.editor = null
+    }
+  }
+
+  waitForCodeMirror() {
+    return new Promise((resolve) => {
+      if (typeof CodeMirror !== 'undefined') {
+        resolve()
+      } else {
+        const checkInterval = setInterval(() => {
+          if (typeof CodeMirror !== 'undefined') {
+            clearInterval(checkInterval)
+            resolve()
+          }
+        }, 100)
+      }
+    })
+  }
+
+  initializeEditor() {
+    this.editor = CodeMirror.fromTextArea(this.textareaTarget, {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      viewportMargin: Infinity
+    })
+    this.editor.setSize(null, '600px')
+
+    this.editor.on('change', () => this.updatePreview())
+    this.updatePreview()
+  }
+}
 ```
 
-### Syncing with Hidden Field
-```javascript
-// Update hidden field on change
-editor.on('change', function() {
-  hiddenField.value = editor.getValue();
-});
-
-// Ensure sync before form submit
-form.addEventListener('submit', function() {
-  hiddenField.value = editor.getValue();
-});
+### View Usage
+```erb
+<div data-controller="markdown-editor"
+     data-markdown-editor-template-value="<%= template_html.gsub('"', '&quot;') %>"
+     data-markdown-editor-logo-url-value="<%= logo_url %>">
+  <textarea data-markdown-editor-target="textarea"></textarea>
+  <div data-markdown-editor-target="preview"></div>
+</div>
 ```
+
+### Key Benefits
+- **No first-load issues**: Stimulus connect() always runs when element appears
+- **Proper cleanup**: disconnect() prevents memory leaks on navigation
+- **No double initialization**: Stimulus manages controller lifecycle
+- **Clean data passing**: Values API for passing server data to JavaScript
+- **Scoped state**: Each instance has its own editor reference
 
 ## Live Preview Implementation
 
