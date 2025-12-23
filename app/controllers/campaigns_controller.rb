@@ -1,6 +1,6 @@
 class CampaignsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_campaign, only: [:show, :edit, :update, :destroy, :schedule, :send_now, :pause, :resume, :cancel, :send_test, :stats]
+  before_action :set_campaign, only: [:show, :edit, :update, :destroy, :schedule, :send_now, :pause, :resume, :cancel, :send_test, :stats, :preview]
 
   # GET /campaigns
   def index
@@ -174,33 +174,69 @@ class CampaignsController < ApplicationController
     redirect_to edit_campaign_path(@campaign, step: 3), notice: "Test email is being sent to #{test_email}. Check your inbox in a moment."
   end
 
-  # POST /campaigns/:id/preview
+  # GET /campaigns/:id/preview
   def preview
     markdown_content = params[:content] || @campaign.body_markdown || ""
 
-    # Create a sample subscriber for merge tags
-    sample_subscriber = @campaign.list.subscribers.first || Subscriber.new(
-      email: 'subscriber@example.com',
-      custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
-    )
+    begin
+      # Create a sample subscriber for merge tags
+      sample_subscriber = if @campaign.list
+        @campaign.list.subscribers.first || Subscriber.new(
+          email: 'subscriber@example.com',
+          custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+        )
+      else
+        Subscriber.new(
+          email: 'subscriber@example.com',
+          custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+        )
+      end
 
-    # Render the preview
-    if @campaign.template
-      # Convert markdown to HTML
-      campaign_html = Kramdown::Document.new(markdown_content).to_html
+      # Render the preview
+      if @campaign.template
+        # Convert markdown to HTML
+        campaign_html = Kramdown::Document.new(markdown_content).to_html
 
-      # Create a temporary campaign object with the preview content
-      preview_campaign = @campaign.dup
-      preview_campaign.define_singleton_method(:body_markdown) { markdown_content }
+        # Create a temporary campaign object with the preview content
+        preview_campaign = @campaign.dup
+        preview_campaign.define_singleton_method(:body_markdown) { markdown_content }
 
-      # Render through template
-      html = @campaign.template.render_for(sample_subscriber, preview_campaign)
+        # Render through template
+        html = @campaign.template.render_for(sample_subscriber, preview_campaign)
 
-      render html: html.html_safe, layout: false
-    else
-      # No template, just render markdown as HTML
-      html = Kramdown::Document.new(markdown_content).to_html
-      render html: html.html_safe, layout: false
+        render html: html.html_safe, layout: false
+      else
+        # No template, just render markdown as HTML
+        html = Kramdown::Document.new(markdown_content).to_html
+        render html: html.html_safe, layout: false
+      end
+    rescue => e
+      # In development, show the full error trace
+      if Rails.env.development?
+        render html: <<~HTML.html_safe, layout: false
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: monospace; padding: 20px; background: #f8d7da; color: #721c24; }
+              h1 { font-size: 18px; margin-bottom: 10px; }
+              pre { background: white; padding: 15px; border: 1px solid #f5c6cb; overflow-x: auto; }
+              .error-class { color: #d9534f; font-weight: bold; }
+              .error-message { margin: 10px 0; }
+            </style>
+          </head>
+          <body>
+            <h1>Preview Error (Development Mode)</h1>
+            <div class="error-class">#{e.class.name}</div>
+            <div class="error-message">#{e.message}</div>
+            <pre>#{e.backtrace.join("\n")}</pre>
+          </body>
+          </html>
+        HTML
+      else
+        # In production, show a simple error message
+        render html: '<div style="padding: 20px; color: #dc3545;">Failed to load preview. Please check your campaign configuration.</div>'.html_safe, layout: false
+      end
     end
   end
 

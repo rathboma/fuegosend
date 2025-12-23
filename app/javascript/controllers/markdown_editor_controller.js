@@ -109,25 +109,28 @@ export default class extends Controller {
       // Fetch preview
       const response = await fetch(url)
 
-      if (!response.ok) {
-        throw new Error('Preview request failed')
-      }
-
+      // Get the HTML response (includes errors in development mode)
       const html = await response.text()
 
-      // Update iframe content
+      // Update iframe content (will show error trace in dev or preview in prod)
       const iframe = this.previewTarget
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
       iframeDoc.open()
       iframeDoc.write(html)
       iframeDoc.close()
     } catch (error) {
-      console.error('Failed to update preview:', error)
-      // Show error in iframe
+      console.error('Failed to fetch preview:', error)
+      // Show network error in iframe
       const iframe = this.previewTarget
       const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
       iframeDoc.open()
-      iframeDoc.write('<div style="padding: 20px; color: #dc3545;">Failed to load preview. Please try again.</div>')
+      iframeDoc.write(`
+        <div style="padding: 20px; background: #f8d7da; color: #721c24; font-family: monospace;">
+          <h3>Network Error</h3>
+          <p>Failed to fetch preview from server.</p>
+          <pre>${error.message}</pre>
+        </div>
+      `)
       iframeDoc.close()
     }
   }
