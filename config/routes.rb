@@ -41,6 +41,7 @@ Rails.application.routes.draw do
         post :cancel
         post :send_test
         get :stats
+        get :preview
       end
     end
     resources :templates

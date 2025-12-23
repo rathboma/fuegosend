@@ -3,15 +3,11 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["textarea", "hiddenField", "preview"]
   static values = {
-    template: String,
-    logoUrl: String,
-    accountName: String,
-    campaignName: String,
-    campaignSubject: String
+    previewUrl: String
   }
 
   connect() {
-    // Wait for CodeMirror to be loaded
+    this.debounceTimer = null
     this.waitForCodeMirror().then(() => {
       this.initializeEditor()
     })
@@ -22,16 +18,19 @@ export default class extends Controller {
       this.editor.toTextArea()
       this.editor = null
     }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
   }
 
   waitForCodeMirror() {
     return new Promise((resolve) => {
-      if (typeof CodeMirror !== 'undefined' && typeof marked !== 'undefined') {
+      if (typeof CodeMirror !== 'undefined') {
         resolve()
       } else {
-        // Poll for CodeMirror and marked to be loaded
+        // Poll for CodeMirror to be loaded
         const checkInterval = setInterval(() => {
-          if (typeof CodeMirror !== 'undefined' && typeof marked !== 'undefined') {
+          if (typeof CodeMirror !== 'undefined') {
             clearInterval(checkInterval)
             resolve()
           }
@@ -61,9 +60,9 @@ export default class extends Controller {
 
     this.editor.setSize(null, '600px')
 
-    // Update preview on change
+    // Update preview on change with debouncing
     this.editor.on('change', () => {
-      this.updatePreview()
+      this.debouncedUpdatePreview()
     })
 
     // Initial preview
@@ -84,51 +83,52 @@ export default class extends Controller {
     }
   }
 
-  updatePreview() {
-    const markdown = this.editor.getValue()
-
-    // Convert markdown to HTML
-    const html = marked.parse(markdown)
-
-    // Sync with hidden field
-    this.syncToHiddenField()
-
-    // Apply template if available
-    let finalHtml = html
-    if (this.hasTemplateValue && this.templateValue) {
-      // Replace content placeholders in template
-      finalHtml = this.templateValue
-        .replace(/\{\{\{content\}\}\}/g, html)
-        .replace(/\{\{\{body\}\}\}/g, html)
-        .replace(/\{\{\{email_content\}\}\}/g, html)
-        .replace(/\{\{content\}\}/g, html)
-        .replace(/\{\{body\}\}/g, html)
-        .replace(/\{\{email_content\}\}/g, html)
-    } else {
-      // No template, wrap in simple container
-      finalHtml = '<div style="max-width: 600px; margin: 0 auto; padding: 20px;">' + html + '</div>'
+  debouncedUpdatePreview() {
+    // Clear existing timer
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
     }
 
-    // Get values with fallbacks
-    const logoUrl = this.hasLogoUrlValue ? this.logoUrlValue : '/logo-placeholder.png'
-    const accountName = this.hasAccountNameValue ? this.accountNameValue : 'Your Company'
-    const campaignName = this.hasCampaignNameValue ? this.campaignNameValue : 'Campaign Name'
-    const campaignSubject = this.hasCampaignSubjectValue ? this.campaignSubjectValue : 'Email Subject'
+    // Sync to hidden field immediately
+    this.syncToHiddenField()
 
-    // Replace example merge tags for preview
-    finalHtml = finalHtml
-      .replace(/\{\{email\}\}/g, 'subscriber@example.com')
-      .replace(/\{\{custom_(\w+)\}\}/g, 'John Doe')
-      .replace(/\{\{name\}\}/g, 'John Doe')
-      .replace(/\{\{first_name\}\}/g, 'John')
-      .replace(/\{\{last_name\}\}/g, 'Doe')
-      .replace(/\{\{unsubscribe_url\}\}/g, '#unsubscribe')
-      .replace(/\{\{campaign_name\}\}/g, campaignName)
-      .replace(/\{\{campaign_subject\}\}/g, campaignSubject)
-      .replace(/\{\{account_name\}\}/g, accountName)
-      .replace(/\{\{logo_url\}\}/g, logoUrl)
-      .replace(/\{\{current_year\}\}/g, new Date().getFullYear())
+    // Set new timer to update preview after 500ms of no typing
+    this.debounceTimer = setTimeout(() => {
+      this.updatePreview()
+    }, 500)
+  }
 
-    this.previewTarget.innerHTML = finalHtml
+  async updatePreview() {
+    const markdown = this.editor.getValue()
+
+    try {
+      // Build URL with content as query parameter
+      const url = new URL(this.previewUrlValue, window.location.origin)
+      url.searchParams.set('content', markdown)
+
+      // Fetch preview
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        throw new Error('Preview request failed')
+      }
+
+      const html = await response.text()
+
+      // Update iframe content
+      const iframe = this.previewTarget
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+      iframeDoc.open()
+      iframeDoc.write(html)
+      iframeDoc.close()
+    } catch (error) {
+      console.error('Failed to update preview:', error)
+      // Show error in iframe
+      const iframe = this.previewTarget
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document
+      iframeDoc.open()
+      iframeDoc.write('<div style="padding: 20px; color: #dc3545;">Failed to load preview. Please try again.</div>')
+      iframeDoc.close()
+    }
   }
 }

@@ -174,6 +174,36 @@ class CampaignsController < ApplicationController
     redirect_to edit_campaign_path(@campaign, step: 3), notice: "Test email is being sent to #{test_email}. Check your inbox in a moment."
   end
 
+  # POST /campaigns/:id/preview
+  def preview
+    markdown_content = params[:content] || @campaign.body_markdown || ""
+
+    # Create a sample subscriber for merge tags
+    sample_subscriber = @campaign.list.subscribers.first || Subscriber.new(
+      email: 'subscriber@example.com',
+      custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+    )
+
+    # Render the preview
+    if @campaign.template
+      # Convert markdown to HTML
+      campaign_html = Kramdown::Document.new(markdown_content).to_html
+
+      # Create a temporary campaign object with the preview content
+      preview_campaign = @campaign.dup
+      preview_campaign.define_singleton_method(:body_markdown) { markdown_content }
+
+      # Render through template
+      html = @campaign.template.render_for(sample_subscriber, preview_campaign)
+
+      render html: html.html_safe, layout: false
+    else
+      # No template, just render markdown as HTML
+      html = Kramdown::Document.new(markdown_content).to_html
+      render html: html.html_safe, layout: false
+    end
+  end
+
   # GET /campaigns/:id/stats
   def stats
     @stats = {

@@ -6,9 +6,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
 
-<!-- Marked.js for markdown rendering -->
-<script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
-
 <h5 class="mb-3">Email Content</h5>
 
 <div class="alert alert-info small mb-3">
@@ -18,30 +15,9 @@
   <% end %>
 </div>
 
-<%
-  # Get template HTML for the editor
-  template_html = ""
-  if campaign.template_id
-    template = @templates.find_by(id: campaign.template_id)
-    if template
-      template_html = template.html_content || template.markdown_content || ""
-    end
-  end
-
-  # Get values for merge tag preview
-  logo_url = campaign.account&.brand_logo.presence || "/logo-placeholder.png"
-  account_name = campaign.account&.name || "Your Company"
-  campaign_name = campaign.name || "Campaign Name"
-  campaign_subject = campaign.subject || "Email Subject"
-%>
-
 <div class="row g-4"
      data-controller="markdown-editor"
-     data-markdown-editor-template-value="<%= template_html.gsub('"', '&quot;').gsub("\n", ' ') %>"
-     data-markdown-editor-logo-url-value="<%= logo_url %>"
-     data-markdown-editor-account-name-value="<%= account_name %>"
-     data-markdown-editor-campaign-name-value="<%= campaign_name %>"
-     data-markdown-editor-campaign-subject-value="<%= campaign_subject %>">
+     data-markdown-editor-preview-url-value="<%= preview_campaign_path(campaign) %>">
   <!-- Markdown Editor (Left) -->
   <div class="col-md-6">
     <div class="mb-2">
@@ -74,14 +50,17 @@
       <small class="text-muted ms-2">How it will look to subscribers</small>
     </div>
     <div class="card border">
-      <div class="card-body" style="min-height: 600px; max-height: 600px; overflow-y: auto;" data-markdown-editor-target="preview">
-        <div class="text-muted text-center py-5">
-          Loading preview...
-        </div>
+      <div class="card-body p-0">
+        <iframe
+          data-markdown-editor-target="preview"
+          style="width: 100%; height: 600px; border: none; display: block;"
+          sandbox="allow-same-origin"
+          title="Email Preview">
+        </iframe>
       </div>
     </div>
     <div class="mt-2">
-      <small class="text-muted">Preview updates automatically as you type</small>
+      <small class="text-muted">Preview updates automatically as you type (debounced 500ms)</small>
     </div>
   </div>
 </div>
@@ -102,31 +81,5 @@
 
 .CodeMirror-scroll {
   min-height: 600px;
-}
-
-[data-markdown-editor-target="preview"] {
-  background: #f4f4f4;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  padding: 20px;
-}
-
-[data-markdown-editor-target="preview"] h1,
-[data-markdown-editor-target="preview"] h2,
-[data-markdown-editor-target="preview"] h3 {
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-[data-markdown-editor-target="preview"] p {
-  margin-bottom: 1rem;
-}
-
-[data-markdown-editor-target="preview"] a {
-  color: #4CAF50;
-  text-decoration: none;
-}
-
-[data-markdown-editor-target="preview"] a:hover {
-  text-decoration: underline;
 }
 </style>

@@ -296,25 +296,72 @@ export default class extends Controller {
 
 ## Live Preview Implementation
 
-### Markdown Rendering
-- Client-side: `marked.js` for instant preview
-- Server-side: `kramdown` gem for final rendering
+### Server-Side Preview Route (Preferred)
+**Use iframe with server-rendered preview for accurate rendering:**
 
-### Template Merging
-```javascript
-// Convert markdown to HTML
-const html = marked.parse(markdown);
+```ruby
+# POST /campaigns/:id/preview
+def preview
+  markdown_content = params[:content] || @campaign.body_markdown || ""
 
-// Merge into template
-finalHtml = templateHtml
-  .replace(/\{\{\{content\}\}\}/g, html)
-  .replace(/\{\{logo_url\}\}/g, logoUrl);
+  # Create sample subscriber
+  sample_subscriber = @campaign.list.subscribers.first || Subscriber.new(...)
+
+  # Render through template
+  html = @campaign.template.render_for(sample_subscriber, preview_campaign)
+
+  render html: html.html_safe, layout: false
+end
 ```
 
+**Stimulus Controller with Debouncing:**
+```javascript
+debouncedUpdatePreview() {
+  if (this.debounceTimer) {
+    clearTimeout(this.debounceTimer)
+  }
+
+  // Update after 500ms of no typing
+  this.debounceTimer = setTimeout(() => {
+    this.updatePreview()
+  }, 500)
+}
+
+async updatePreview() {
+  const response = await fetch(this.previewUrlValue, {
+    method: 'POST',
+    body: new URLSearchParams({ content: markdown })
+  })
+
+  const html = await response.text()
+
+  // Update iframe
+  const iframeDoc = iframe.contentDocument
+  iframeDoc.open()
+  iframeDoc.write(html)
+  iframeDoc.close()
+}
+```
+
+**View with iframe:**
+```erb
+<iframe data-markdown-editor-target="preview"
+        style="width: 100%; height: 600px;"
+        sandbox="allow-same-origin">
+</iframe>
+```
+
+### Benefits
+- **Accurate rendering**: Server-side ensures preview matches final email exactly
+- **Template isolation**: iframe prevents CSS conflicts with app styles
+- **Performance**: 500ms debounce reduces unnecessary requests while typing
+- **Testable**: Preview route can be tested independently
+- **Reusable**: Same route can be used for step 3 preview
+
 ### Preview Styling
-- Grey background matches email wrapper
-- Full template styling visible
-- Responsive preview container
+- Full template rendering with Mustache merge tags
+- Sample subscriber data for realistic preview
+- Template HTML/CSS fully isolated in iframe
 
 ## Database Patterns
 
