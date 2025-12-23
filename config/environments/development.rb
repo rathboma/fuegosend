@@ -9,6 +9,9 @@ Rails.application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
 
+  # Allow access from other machines
+  config.hosts << "desktop-01.local"
+
   # Show full error reports.
   config.consider_all_requests_local = true
 
