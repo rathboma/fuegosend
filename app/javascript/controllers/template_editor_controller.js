@@ -1,11 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["textarea", "hiddenField", "preview", "saveStatus"]
+  static targets = ["textarea", "hiddenField", "preview", "saveStatus", "imageUpload", "imageModal", "imageUrl"]
   static values = {
     previewUrl: String,
     saveUrl: String,
-    csrfToken: String
+    csrfToken: String,
+    uploadUrl: String
   }
 
   connect() {
@@ -226,5 +227,109 @@ export default class extends Controller {
       `)
       iframeDoc.close()
     }
+  }
+
+  // Image upload for HTML editor
+  openImageModal() {
+    if (this.hasImageModalTarget) {
+      const modal = new bootstrap.Modal(this.imageModalTarget)
+      modal.show()
+    }
+  }
+
+  triggerImageUpload() {
+    this.imageUploadTarget.click()
+  }
+
+  async handleImageUpload(event) {
+    const file = event.target.files[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      // Show uploading status
+      const statusEl = this.imageModalTarget.querySelector('.upload-status')
+      if (statusEl) {
+        statusEl.textContent = 'Uploading...'
+        statusEl.classList.remove('d-none', 'text-danger')
+        statusEl.classList.add('text-info')
+      }
+
+      // Upload the file
+      const response = await fetch(this.uploadUrlValue, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': this.csrfTokenValue,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Show the URL in the input
+        if (this.hasImageUrlTarget) {
+          this.imageUrlTarget.value = data.url
+        }
+
+        if (statusEl) {
+          statusEl.textContent = 'Upload successful!'
+          statusEl.classList.remove('text-info', 'text-danger')
+          statusEl.classList.add('text-success')
+        }
+      } else {
+        if (statusEl) {
+          statusEl.textContent = `Upload failed: ${data.errors.join(', ')}`
+          statusEl.classList.remove('text-info', 'text-success')
+          statusEl.classList.add('text-danger')
+        }
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      const statusEl = this.imageModalTarget.querySelector('.upload-status')
+      if (statusEl) {
+        statusEl.textContent = 'Upload failed. Please try again.'
+        statusEl.classList.remove('text-info', 'text-success')
+        statusEl.classList.add('text-danger')
+      }
+    }
+
+    // Clear the file input
+    event.target.value = ''
+  }
+
+  insertImage() {
+    if (!this.hasImageUrlTarget) return
+
+    const url = this.imageUrlTarget.value.trim()
+    if (!url) {
+      alert('Please enter or upload an image URL')
+      return
+    }
+
+    // Insert image tag at cursor position
+    const imageTag = `<img src="${url}" alt="Image" style="max-width: 100%; height: auto;">`
+    this.editor.replaceSelection(imageTag)
+    this.editor.focus()
+
+    // Clear the input and close modal
+    this.imageUrlTarget.value = ''
+    const statusEl = this.imageModalTarget.querySelector('.upload-status')
+    if (statusEl) {
+      statusEl.textContent = ''
+      statusEl.classList.add('d-none')
+    }
+
+    // Close the modal
+    const modal = bootstrap.Modal.getInstance(this.imageModalTarget)
+    if (modal) {
+      modal.hide()
+    }
+
+    // Trigger preview update
+    this.debouncedUpdatePreview()
   }
 }

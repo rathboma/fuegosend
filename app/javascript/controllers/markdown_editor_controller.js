@@ -1,11 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["textarea", "hiddenField", "preview", "saveStatus"]
+  static targets = ["textarea", "hiddenField", "preview", "saveStatus", "toolbar", "imageUpload"]
   static values = {
     previewUrl: String,
     saveUrl: String,
-    csrfToken: String
+    csrfToken: String,
+    uploadUrl: String
   }
 
   connect() {
@@ -225,5 +226,140 @@ export default class extends Controller {
       `)
       iframeDoc.close()
     }
+  }
+
+  // Formatting actions
+  bold() {
+    this.wrapSelection('**', '**')
+  }
+
+  italic() {
+    this.wrapSelection('*', '*')
+  }
+
+  heading1() {
+    this.insertAtLineStart('# ')
+  }
+
+  heading2() {
+    this.insertAtLineStart('## ')
+  }
+
+  heading3() {
+    this.insertAtLineStart('### ')
+  }
+
+  link() {
+    const selection = this.editor.getSelection()
+    const text = selection || 'link text'
+    const replacement = `[${text}](https://example.com)`
+    this.editor.replaceSelection(replacement)
+
+    // Select the URL for easy editing
+    const cursor = this.editor.getCursor()
+    const line = cursor.line
+    const urlStart = cursor.ch - 20 // Position of "https"
+    const urlEnd = cursor.ch - 1    // Position before ")"
+    this.editor.setSelection(
+      { line: line, ch: urlStart },
+      { line: line, ch: urlEnd }
+    )
+    this.editor.focus()
+  }
+
+  // Image upload
+  triggerImageUpload() {
+    this.imageUploadTarget.click()
+  }
+
+  async handleImageUpload(event) {
+    const file = event.target.files[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      // Show uploading status
+      const uploadingText = `![Uploading ${file.name}...]()`
+      this.editor.replaceSelection(uploadingText)
+      this.editor.focus()
+
+      // Upload the file
+      const response = await fetch(this.uploadUrlValue, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-Token': this.csrfTokenValue,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Replace uploading text with actual image
+        const content = this.editor.getValue()
+        const updatedContent = content.replace(
+          uploadingText,
+          `![${file.name}](${data.url})`
+        )
+        this.editor.setValue(updatedContent)
+        this.editor.focus()
+
+        // Trigger preview update
+        this.debouncedUpdatePreview()
+      } else {
+        alert(`Upload failed: ${data.errors.join(', ')}`)
+        // Remove uploading text
+        const content = this.editor.getValue()
+        const updatedContent = content.replace(uploadingText, '')
+        this.editor.setValue(updatedContent)
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      alert('Upload failed. Please try again.')
+    }
+
+    // Clear the file input
+    event.target.value = ''
+  }
+
+  // Helper methods
+  wrapSelection(before, after) {
+    const selection = this.editor.getSelection()
+    if (selection) {
+      this.editor.replaceSelection(before + selection + after)
+    } else {
+      const cursor = this.editor.getCursor()
+      this.editor.replaceSelection(before + 'text' + after)
+      // Select 'text' for easy replacement
+      this.editor.setSelection(
+        { line: cursor.line, ch: cursor.ch + before.length },
+        { line: cursor.line, ch: cursor.ch + before.length + 4 }
+      )
+    }
+    this.editor.focus()
+  }
+
+  insertAtLineStart(prefix) {
+    const cursor = this.editor.getCursor()
+    const line = this.editor.getLine(cursor.line)
+
+    // Toggle: remove prefix if it already exists
+    if (line.startsWith(prefix)) {
+      const newLine = line.substring(prefix.length)
+      this.editor.replaceRange(
+        newLine,
+        { line: cursor.line, ch: 0 },
+        { line: cursor.line, ch: line.length }
+      )
+    } else {
+      this.editor.replaceRange(
+        prefix,
+        { line: cursor.line, ch: 0 }
+      )
+    }
+    this.editor.focus()
   }
 }

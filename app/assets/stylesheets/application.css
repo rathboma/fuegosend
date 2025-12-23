@@ -90,6 +90,21 @@
   color: #721c24;
 }
 
+.badge.status-unsubscribed {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge.status-bounced {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge.status-complained {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
 /* Quota bar */
 .quota-bar {
   height: 12px;

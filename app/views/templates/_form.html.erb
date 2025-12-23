@@ -49,13 +49,19 @@
        data-controller="template-editor"
        data-template-editor-preview-url-value="<%= preview_template_path(template) %>"
        data-template-editor-save-url-value="<%= template.persisted? ? template_path(template) : '' %>"
+       data-template-editor-upload-url-value="<%= images_path %>"
        data-template-editor-csrf-token-value="<%= form_authenticity_token %>">
 
     <!-- HTML Editor (Left) -->
     <div class="col-md-6">
-      <div class="mb-2">
-        <strong>HTML Content</strong>
-        <small class="text-muted ms-2">Full email template with Mustache tags</small>
+      <div class="mb-2 d-flex justify-content-between align-items-center">
+        <div>
+          <strong>HTML Content</strong>
+          <small class="text-muted ms-2">Full email template with Mustache tags</small>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-primary" data-action="click->template-editor#openImageModal">
+          📷 Insert Image
+        </button>
       </div>
       <div class="card border">
         <div class="card-body p-0">
@@ -106,6 +112,46 @@
   <div class="d-flex gap-2 mt-4">
     <%= f.submit template.new_record? ? "Create Template" : "Update Template", class: "btn btn-primary" %>
     <%= link_to "Cancel", template.new_record? ? templates_path : template, class: "btn btn-outline-secondary" %>
+  </div>
+
+  <!-- Image Upload Modal -->
+  <div class="modal fade" tabindex="-1" data-template-editor-target="imageModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Insert Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Upload option -->
+          <div class="mb-3">
+            <label class="form-label">Upload Image</label>
+            <input type="file"
+                   accept="image/*"
+                   class="form-control"
+                   data-template-editor-target="imageUpload"
+                   data-action="change->template-editor#handleImageUpload">
+            <div class="form-text">Or enter an image URL below</div>
+          </div>
+
+          <!-- URL input -->
+          <div class="mb-3">
+            <label class="form-label">Image URL</label>
+            <input type="url"
+                   class="form-control"
+                   data-template-editor-target="imageUrl"
+                   placeholder="https://example.com/image.jpg">
+          </div>
+
+          <!-- Upload status -->
+          <div class="upload-status d-none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-action="click->template-editor#insertImage">Insert Image</button>
+        </div>
+      </div>
+    </div>
   </div>
 <% end %>
 

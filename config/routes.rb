@@ -54,6 +54,7 @@ Rails.application.routes.draw do
         get :preview
       end
     end
+    resources :images, only: [:create]
     resource :account, only: [:show, :edit, :update]
   end
 

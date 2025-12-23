@@ -6,6 +6,7 @@ class Account < ApplicationRecord
   has_many :segments, dependent: :destroy
   has_many :campaigns, dependent: :destroy
   has_many :templates, dependent: :destroy
+  has_many :images, dependent: :destroy
   has_many :custom_field_definitions, dependent: :destroy
   has_many :webhook_endpoints, dependent: :destroy
   has_many :webhook_events, dependent: :destroy
