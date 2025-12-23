@@ -1,0 +1,58 @@
+<%= form_with(model: list, local: true) do |f| %>
+  <% if list.errors.any? %>
+    <div class="alert alert-danger small mb-4" role="alert">
+      <strong><%= pluralize(list.errors.count, "error") %> prohibited this list from being saved:</strong>
+      <ul class="mb-0 mt-2">
+        <% list.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :name, "List Name *", class: "form-label" %>
+    <%= f.text_field :name, class: "form-control", placeholder: "e.g. Newsletter Subscribers", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :description, class: "form-label" %>
+    <%= f.text_area :description, class: "form-control", rows: 3, placeholder: "Optional description of this list" %>
+  </div>
+
+  <hr class="my-4">
+
+  <h5 class="mb-3">Subscription Form Settings</h5>
+
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= f.check_box :enable_subscription_form, class: "form-check-input", role: "switch" %>
+      <%= f.label :enable_subscription_form, "Enable public subscription form", class: "form-check-label" %>
+    </div>
+    <small class="text-muted">Allow people to subscribe to this list via a public form</small>
+  </div>
+
+  <div class="mb-3">
+    <div class="form-check form-switch">
+      <%= f.check_box :double_opt_in, class: "form-check-input", role: "switch" %>
+      <%= f.label :double_opt_in, "Enable double opt-in", class: "form-check-label" %>
+    </div>
+    <small class="text-muted">Require subscribers to confirm their email address before being added to the list</small>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :form_success_message, "Success Message", class: "form-label" %>
+    <%= f.text_area :form_success_message, class: "form-control", rows: 2, placeholder: "Optional custom message shown after successful subscription" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :form_redirect_url, "Redirect URL", class: "form-label" %>
+    <%= f.url_field :form_redirect_url, class: "form-control", placeholder: "https://example.com/thank-you" %>
+    <small class="text-muted">Optional URL to redirect to after successful subscription</small>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= f.submit list.new_record? ? "Create List" : "Update List", class: "btn btn-primary" %>
+    <%= link_to "Cancel", list.new_record? ? lists_path : list, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

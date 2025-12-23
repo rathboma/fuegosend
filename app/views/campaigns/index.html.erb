@@ -1,0 +1,124 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fs-2 mb-0">Campaigns</h1>
+    <%= link_to "New Campaign", new_campaign_path, class: "btn btn-primary" %>
+  </div>
+
+  <!-- Filters -->
+  <div class="card border mb-4">
+    <div class="card-body">
+      <%= form_with url: campaigns_path, method: :get, local: true, class: "row g-3" do |f| %>
+        <div class="col-md-4">
+          <%= f.label :status, "Status", class: "form-label small" %>
+          <%= f.select :status, options_for_select([["All", ""], ["Draft", "draft"], ["Scheduled", "scheduled"], ["Sending", "sending"], ["Sent", "sent"], ["Paused", "paused"]], params[:status]), {}, class: "form-select form-select-sm" %>
+        </div>
+        <div class="col-md-4">
+          <%= f.label :list_id, "List", class: "form-label small" %>
+          <%= f.select :list_id, options_for_select([["All Lists", ""]] + current_account.lists.pluck(:name, :id), params[:list_id]), {}, class: "form-select form-select-sm" %>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <%= f.submit "Filter", class: "btn btn-sm btn-outline-primary w-100" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Campaigns List -->
+  <% if @campaigns.any? %>
+    <div class="row g-4">
+      <% @campaigns.each do |campaign| %>
+        <div class="col-12">
+          <div class="card border">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <h5 class="mb-1">
+                    <%= link_to campaign.name, campaign.draft? ? edit_campaign_path(campaign) : campaign, class: "text-decoration-none" %>
+                  </h5>
+                  <p class="text-muted small mb-2"><%= campaign.subject %></p>
+                  <div>
+                    <span class="badge status-<%= campaign.status %> me-2"><%= campaign.status.titleize %></span>
+                    <span class="text-muted small">List: <%= link_to campaign.list.name, campaign.list, class: "text-decoration-none" %></span>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <div class="row g-2 text-center">
+                    <div class="col-4">
+                      <div class="text-muted small">Recipients</div>
+                      <div class="fw-semibold"><%= number_with_delimiter(campaign.total_recipients) %></div>
+                    </div>
+                    <div class="col-4">
+                      <div class="text-muted small">Sent</div>
+                      <div class="fw-semibold"><%= number_with_delimiter(campaign.sent_count) %></div>
+                    </div>
+                    <div class="col-4">
+                      <div class="text-muted small">Opens</div>
+                      <div class="fw-semibold"><%= campaign.open_rate %>%</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-2 text-end">
+                  <% if campaign.draft? %>
+                    <%= link_to "Edit Campaign", edit_campaign_path(campaign), class: "btn btn-sm btn-primary" %>
+                  <% else %>
+                    <%= link_to "View Details", campaign, class: "btn btn-sm btn-outline-primary" %>
+                  <% end %>
+                </div>
+              </div>
+
+              <!-- Progress bar for sending campaigns -->
+              <% if campaign.sending? && campaign.total_recipients > 0 %>
+                <div class="mt-3">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-muted">Sending progress</small>
+                    <small class="text-muted"><%= campaign.percent_complete %>%</small>
+                  </div>
+                  <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: <%= campaign.percent_complete %>%" aria-valuenow="<%= campaign.percent_complete %>" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <div class="card-footer bg-transparent">
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                  Created <%= time_ago_in_words(campaign.created_at) %> ago
+                  <% if campaign.scheduled? && campaign.scheduled_at %>
+                    • Scheduled for <%= campaign.scheduled_at.strftime("%b %d at %I:%M %p") %>
+                  <% elsif campaign.sent? && campaign.finished_sending_at %>
+                    • Finished <%= time_ago_in_words(campaign.finished_sending_at) %> ago
+                  <% end %>
+                </small>
+                <div class="btn-group btn-group-sm">
+                  <% if campaign.draft? %>
+                    <%= button_to "Send Now", send_now_campaign_path(campaign), method: :post, class: "btn btn-sm btn-success", data: { turbo_confirm: "Are you sure you want to send this campaign now?" } %>
+                  <% elsif campaign.scheduled? %>
+                    <%= button_to "Cancel", cancel_campaign_path(campaign), method: :post, class: "btn btn-sm btn-outline-danger", data: { turbo_confirm: "Are you sure you want to cancel this scheduled campaign?" } %>
+                  <% elsif campaign.sending? %>
+                    <%= button_to "Pause", pause_campaign_path(campaign), method: :post, class: "btn btn-sm btn-warning", data: { turbo_confirm: "Are you sure you want to pause this campaign?" } %>
+                  <% elsif campaign.paused? %>
+                    <%= button_to "Resume", resume_campaign_path(campaign), method: :post, class: "btn btn-sm btn-success", data: { turbo_confirm: "Are you sure you want to resume this campaign?" } %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card border border-2 border-dashed">
+      <div class="card-body text-center py-5">
+        <h5 class="mb-3">No campaigns found</h5>
+        <% if params[:status].present? || params[:list_id].present? %>
+          <p class="text-muted mb-4">Try adjusting your filters or <%= link_to "view all campaigns", campaigns_path %>.</p>
+        <% else %>
+          <p class="text-muted mb-4">Create your first campaign to send emails to your subscribers.</p>
+          <%= link_to "Create Campaign", new_campaign_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  campaign_send: one
+  campaign_link: one
+  ip_address: MyString
+  user_agent: MyString
+  clicked_at: 2025-12-22 22:40:46
+
+two:
+  campaign_send: two
+  campaign_link: two
+  ip_address: MyString
+  user_agent: MyString
+  clicked_at: 2025-12-22 22:40:46

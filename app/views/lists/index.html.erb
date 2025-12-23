@@ -1,0 +1,55 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fs-2 mb-0">Lists</h1>
+    <%= link_to "New List", new_list_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @lists.any? %>
+    <div class="row g-4">
+      <% @lists.each do |list| %>
+        <div class="col-md-6 col-xl-4">
+          <div class="card border h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="card-title mb-0">
+                  <%= link_to list.name, list, class: "text-decoration-none" %>
+                </h5>
+                <span class="badge bg-secondary"><%= number_with_delimiter(list.subscribers_count) %> subscribers</span>
+              </div>
+
+              <% if list.description.present? %>
+                <p class="card-text text-muted small mb-3"><%= truncate(list.description, length: 100) %></p>
+              <% end %>
+
+              <div class="mb-3">
+                <% if list.enable_subscription_form %>
+                  <span class="badge bg-success small">Subscription form enabled</span>
+                <% end %>
+                <% if list.double_opt_in %>
+                  <span class="badge bg-info small">Double opt-in</span>
+                <% end %>
+              </div>
+
+              <div class="d-flex gap-2">
+                <%= link_to "View", list, class: "btn btn-sm btn-outline-primary" %>
+                <%= link_to "Edit", edit_list_path(list), class: "btn btn-sm btn-outline-secondary" %>
+                <%= button_to "Delete", list, method: :delete, data: { turbo_confirm: "Are you sure? This will delete the list and all subscriptions." }, class: "btn btn-sm btn-outline-danger" %>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <small class="text-muted">Created <%= time_ago_in_words(list.created_at) %> ago</small>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card border border-2 border-dashed">
+      <div class="card-body text-center py-5">
+        <h5 class="mb-3">No lists yet</h5>
+        <p class="text-muted mb-4">Create your first list to start collecting subscribers.</p>
+        <%= link_to "Create List", new_list_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>

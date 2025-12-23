@@ -1,0 +1,179 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><%= link_to "Segments", segments_path %></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= @segment.name %></li>
+        </ol>
+      </nav>
+      <h1 class="fs-2 mb-0"><%= @segment.name %></h1>
+    </div>
+    <div class="d-flex gap-2">
+      <%= link_to "Edit", edit_segment_path(@segment), class: "btn btn-outline-secondary" %>
+      <%= button_to "Refresh Count", segment_path(@segment), method: :patch, params: { segment: { id: @segment.id } }, class: "btn btn-outline-primary" %>
+      <%= button_to "Delete", @segment, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "btn btn-outline-danger" %>
+    </div>
+  </div>
+
+  <!-- Segment Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Estimated Subscribers</div>
+          <div class="fs-2 fw-semibold"><%= number_with_delimiter(@segment.estimated_subscribers_count) %></div>
+          <% if @segment.count_updated_at %>
+            <small class="text-muted">Last updated <%= time_ago_in_words(@segment.count_updated_at) %> ago</small>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Criteria Rules</div>
+          <div class="fs-2 fw-semibold"><%= @segment.criteria.size %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Campaigns Using</div>
+          <div class="fs-2 fw-semibold"><%= @segment.campaigns.count %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segment Details -->
+  <div class="mb-4">
+    <h2 class="fs-4 mb-3">Segment Details</h2>
+    <div class="card border">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="text-muted small mb-1">Name</div>
+            <div class="fw-semibold"><%= @segment.name %></div>
+          </div>
+          <div class="col-md-6">
+            <div class="text-muted small mb-1">List</div>
+            <div class="fw-semibold"><%= link_to @segment.list.name, @segment.list, class: "text-decoration-none" %></div>
+          </div>
+          <% if @segment.description.present? %>
+            <div class="col-12">
+              <div class="text-muted small mb-1">Description</div>
+              <div class="fw-semibold"><%= @segment.description %></div>
+            </div>
+          <% end %>
+          <div class="col-md-6">
+            <div class="text-muted small mb-1">Created</div>
+            <div class="fw-semibold"><%= @segment.created_at.strftime("%B %d, %Y") %></div>
+          </div>
+          <div class="col-md-6">
+            <div class="text-muted small mb-1">Last Updated</div>
+            <div class="fw-semibold"><%= @segment.updated_at.strftime("%B %d, %Y") %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Criteria -->
+  <div class="mb-4">
+    <h2 class="fs-4 mb-3">Segment Criteria</h2>
+    <div class="card border">
+      <div class="card-body">
+        <% if @segment.criteria.any? %>
+          <% @segment.criteria.each_with_index do |criterion, index| %>
+            <div class="d-flex align-items-center mb-2">
+              <span class="badge bg-secondary me-2"><%= index + 1 %></span>
+              <div>
+                <strong><%= criterion['field']&.titleize || 'Unknown field' %></strong>
+                <span class="text-muted mx-2"><%= criterion['operator']&.humanize || 'unknown' %></span>
+                <code><%= criterion['value'] %></code>
+              </div>
+            </div>
+            <% unless index == @segment.criteria.size - 1 %>
+              <div class="text-muted small ms-4 mb-2">AND</div>
+            <% end %>
+          <% end %>
+        <% else %>
+          <p class="text-muted mb-0">No criteria defined. This segment will match all subscribers in the list.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sample Matching Subscribers -->
+  <% if @sample_subscribers.any? %>
+    <div class="mb-4">
+      <h2 class="fs-4 mb-3">Sample Matching Subscribers</h2>
+      <div class="card border">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Subscribed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @sample_subscribers.each do |subscriber| %>
+                <tr>
+                  <td><%= link_to subscriber.email, subscriber, class: "text-decoration-none" %></td>
+                  <td><span class="badge status-<%= subscriber.status %>"><%= subscriber.status.titleize %></span></td>
+                  <td><%= subscriber.source || "—" %></td>
+                  <td><%= time_ago_in_words(subscriber.created_at) %> ago</td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <small class="text-muted">Showing first 10 matching subscribers</small>
+    </div>
+  <% else %>
+    <div class="alert alert-warning">
+      No subscribers currently match this segment's criteria.
+    </div>
+  <% end %>
+
+  <!-- Campaigns Using This Segment -->
+  <% if @segment.campaigns.any? %>
+    <div class="mb-4">
+      <h2 class="fs-4 mb-3">Campaigns Using This Segment</h2>
+      <div class="card border">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Campaign</th>
+                <th>Status</th>
+                <th>Recipients</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @segment.campaigns.order(created_at: :desc).limit(10).each do |campaign| %>
+                <tr>
+                  <td><%= link_to campaign.name, campaign, class: "text-decoration-none" %></td>
+                  <td><span class="badge status-<%= campaign.status %>"><%= campaign.status.titleize %></span></td>
+                  <td><%= number_with_delimiter(campaign.total_recipients) %></td>
+                  <td><%= time_ago_in_words(campaign.created_at) %> ago</td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="alert alert-info small">
+    <strong>Note:</strong> Segment counts are cached and refreshed hourly. Click "Refresh Count" to update manually.
+  </div>
+</div>

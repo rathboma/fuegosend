@@ -1,0 +1,18 @@
+<div class="container-fluid py-4" style="max-width: 800px;">
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><%= link_to "Subscribers", subscribers_path %></li>
+        <li class="breadcrumb-item"><%= link_to @subscriber.email, @subscriber %></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+      </ol>
+    </nav>
+    <h1 class="fs-2 mb-0">Edit Subscriber</h1>
+  </div>
+
+  <div class="card border">
+    <div class="card-body">
+      <%= render "form", subscriber: @subscriber %>
+    </div>
+  </div>
+</div>

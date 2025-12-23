@@ -1,0 +1,79 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fs-2 mb-0">Segments</h1>
+    <%= link_to "New Segment", new_segment_path, class: "btn btn-primary" %>
+  </div>
+
+  <!-- Filter -->
+  <div class="card border mb-4">
+    <div class="card-body">
+      <%= form_with url: segments_path, method: :get, local: true, class: "row g-3" do |f| %>
+        <div class="col-md-6">
+          <%= f.label :list_id, "Filter by List", class: "form-label small" %>
+          <%= f.select :list_id, options_for_select([["All Lists", ""]] + current_account.lists.pluck(:name, :id), params[:list_id]), {}, class: "form-select form-select-sm" %>
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+          <%= f.submit "Filter", class: "btn btn-sm btn-outline-primary w-100" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @segments.any? %>
+    <div class="row g-4">
+      <% @segments.each do |segment| %>
+        <div class="col-md-6 col-xl-4">
+          <div class="card border h-100">
+            <div class="card-body">
+              <h5 class="card-title mb-2">
+                <%= link_to segment.name, segment, class: "text-decoration-none" %>
+              </h5>
+
+              <% if segment.description.present? %>
+                <p class="card-text text-muted small mb-3"><%= truncate(segment.description, length: 100) %></p>
+              <% end %>
+
+              <div class="mb-3">
+                <div class="text-muted small mb-1">List</div>
+                <div><%= link_to segment.list.name, segment.list, class: "text-decoration-none" %></div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-muted small mb-1">Estimated Subscribers</div>
+                <div class="fs-4 fw-semibold"><%= number_with_delimiter(segment.estimated_subscribers_count) %></div>
+                <% if segment.count_updated_at %>
+                  <small class="text-muted">Updated <%= time_ago_in_words(segment.count_updated_at) %> ago</small>
+                <% end %>
+              </div>
+
+              <div class="mb-3">
+                <span class="text-muted small">Criteria: <%= segment.criteria.size %> rules</span>
+              </div>
+
+              <div class="d-flex gap-2">
+                <%= link_to "View", segment, class: "btn btn-sm btn-outline-primary" %>
+                <%= link_to "Edit", edit_segment_path(segment), class: "btn btn-sm btn-outline-secondary" %>
+                <%= button_to "Delete", segment, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "btn btn-sm btn-outline-danger" %>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <small class="text-muted">Created <%= time_ago_in_words(segment.created_at) %> ago</small>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card border border-2 border-dashed">
+      <div class="card-body text-center py-5">
+        <h5 class="mb-3">No segments found</h5>
+        <% if params[:list_id].present? %>
+          <p class="text-muted mb-4">Try adjusting your filters or <%= link_to "view all segments", segments_path %>.</p>
+        <% else %>
+          <p class="text-muted mb-4">Create dynamic segments to target specific groups of subscribers.</p>
+          <%= link_to "Create Segment", new_segment_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

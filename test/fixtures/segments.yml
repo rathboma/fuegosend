@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account: one
+  list: one
+  name: MyString
+  description: MyText
+  estimated_subscribers_count: 1
+  count_updated_at: 2025-12-22 22:39:03
+
+two:
+  account: two
+  list: two
+  name: MyString
+  description: MyText
+  estimated_subscribers_count: 1
+  count_updated_at: 2025-12-22 22:39:03

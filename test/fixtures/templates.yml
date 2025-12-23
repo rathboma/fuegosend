@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account: one
+  name: MyString
+  description: MyText
+  html_content: MyText
+  markdown_content: MyText
+  is_default: false
+
+two:
+  account: two
+  name: MyString
+  description: MyText
+  html_content: MyText
+  markdown_content: MyText
+  is_default: false

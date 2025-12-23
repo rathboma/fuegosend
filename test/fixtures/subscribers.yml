@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account: one
+  email: MyString
+  status: MyString
+  source: MyString
+  ip_address: MyString
+  confirmed_at: 2025-12-22 22:38:52
+  unsubscribed_at: 2025-12-22 22:38:52
+  bounced_at: 2025-12-22 22:38:52
+  complained_at: 2025-12-22 22:38:52
+
+two:
+  account: two
+  email: MyString
+  status: MyString
+  source: MyString
+  ip_address: MyString
+  confirmed_at: 2025-12-22 22:38:52
+  unsubscribed_at: 2025-12-22 22:38:52
+  bounced_at: 2025-12-22 22:38:52
+  complained_at: 2025-12-22 22:38:52

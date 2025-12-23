@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  account: one
+  name: MyString
+  description: MyText
+  subscribers_count: 1
+  enable_subscription_form: false
+  form_success_message: MyText
+  form_redirect_url: MyString
+  double_opt_in: false
+
+two:
+  account: two
+  name: MyString
+  description: MyText
+  subscribers_count: 1
+  enable_subscription_form: false
+  form_success_message: MyText
+  form_redirect_url: MyString
+  double_opt_in: false

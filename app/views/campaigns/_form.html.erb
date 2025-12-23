@@ -1,0 +1,62 @@
+<%= form_with(model: campaign, local: true, html: { id: "campaign-form" }) do |f| %>
+  <% if campaign.errors.any? %>
+    <div class="alert alert-danger small mb-4" role="alert">
+      <strong><%= pluralize(campaign.errors.count, "error") %> prohibited this campaign from being saved:</strong>
+      <ul class="mb-0 mt-2">
+        <% campaign.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- Progress Indicator -->
+  <div class="mb-4">
+    <div class="d-flex justify-content-between mb-2">
+      <div class="flex-grow-1">
+        <div class="progress" style="height: 4px;">
+          <% if @step == 1 %>
+            <div class="progress-bar bg-primary" role="progressbar" style="width: 33%"></div>
+          <% elsif @step == 2 %>
+            <div class="progress-bar bg-primary" role="progressbar" style="width: 66%"></div>
+          <% else %>
+            <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-between">
+      <% if campaign.persisted? %>
+        <%= link_to "1. Details", edit_campaign_path(campaign, step: 1), class: "text-decoration-none step-link #{'text-primary fw-semibold' if @step == 1} #{'text-muted' if @step != 1}" %>
+        <%= link_to "2. Content", edit_campaign_path(campaign, step: 2), class: "text-decoration-none step-link #{'text-primary fw-semibold' if @step == 2} #{'text-muted' if @step != 2}" %>
+        <% if campaign.body_markdown.present? %>
+          <%= link_to "3. Review", edit_campaign_path(campaign, step: 3), class: "text-decoration-none step-link #{'text-primary fw-semibold' if @step == 3} #{'text-muted' if @step != 3}" %>
+        <% else %>
+          <small class="text-muted">3. Review</small>
+        <% end %>
+      <% else %>
+        <small class="<%= @step == 1 ? 'text-primary fw-semibold' : 'text-muted' %>">1. Details</small>
+        <small class="<%= @step == 2 ? 'text-primary fw-semibold' : 'text-muted' %>">2. Content</small>
+        <small class="<%= @step == 3 ? 'text-primary fw-semibold' : 'text-muted' %>">3. Review</small>
+      <% end %>
+    </div>
+  </div>
+
+  <style>
+    .step-link {
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .step-link:hover {
+      color: #4CAF50 !important;
+    }
+  </style>
+
+  <% if @step == 1 %>
+    <%= render "campaigns/step1", f: f, campaign: campaign %>
+  <% elsif @step == 2 %>
+    <%= render "campaigns/step2", f: f, campaign: campaign %>
+  <% else %>
+    <%= render "campaigns/step3", f: f, campaign: campaign %>
+  <% end %>
+<% end %>

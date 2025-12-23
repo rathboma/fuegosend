@@ -1,0 +1,217 @@
+<div class="row g-4">
+  <!-- Left Column: Campaign Summary -->
+  <div class="col-md-5">
+    <h5 class="mb-3">Campaign Summary</h5>
+
+    <div class="card border mb-3">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Details</h6>
+        <div class="mb-3">
+          <div class="text-muted small mb-1">Campaign Name</div>
+          <div class="fw-semibold"><%= campaign.name %></div>
+        </div>
+        <div class="mb-3">
+          <div class="text-muted small mb-1">Email Subject</div>
+          <div class="fw-semibold"><%= campaign.subject %></div>
+        </div>
+        <div class="mb-3">
+          <div class="text-muted small mb-1">From</div>
+          <div class="fw-semibold"><%= campaign.from_name %> &lt;<%= campaign.from_email %>&gt;</div>
+        </div>
+        <% if campaign.reply_to_email.present? %>
+          <div class="mb-0">
+            <div class="text-muted small mb-1">Reply To</div>
+            <div class="fw-semibold"><%= campaign.reply_to_email %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card border mb-3">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Recipients</h6>
+        <div class="mb-3">
+          <div class="text-muted small mb-1">List</div>
+          <div class="fw-semibold"><%= campaign.list.name %></div>
+          <small class="text-muted"><%= pluralize(campaign.list.subscribers_count, 'subscriber') %></small>
+        </div>
+        <% if campaign.segment %>
+          <div class="mb-0">
+            <div class="text-muted small mb-1">Segment</div>
+            <div class="fw-semibold"><%= campaign.segment.name %></div>
+            <small class="text-muted"><%= pluralize(campaign.segment.estimated_subscribers_count, 'subscriber') %></small>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card border mb-3">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Template</h6>
+        <div class="fw-semibold"><%= campaign.template&.name || 'No template' %></div>
+      </div>
+    </div>
+
+    <!-- Send Test Email -->
+    <div class="card border mb-3">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-3 text-muted">Send Test Email</h6>
+        <%= form_with(url: send_test_campaign_path(campaign), method: :post, class: "d-flex gap-2") do |f| %>
+          <%= email_field_tag :test_email, current_user.email, class: "form-control", placeholder: "test@example.com", required: true %>
+          <%= f.submit "Send Test", class: "btn btn-outline-primary" %>
+        <% end %>
+        <small class="text-muted d-block mt-2">Send a test email to preview how it will look</small>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex flex-column gap-2">
+      <%= link_to "← Back to Content", campaign.persisted? ? edit_campaign_path(campaign, step: 2) : new_campaign_path(step: 2), class: "btn btn-outline-secondary" %>
+
+      <% if campaign.draft? %>
+        <%= button_to "Send Now", send_now_campaign_path(campaign), method: :post, class: "btn btn-success btn-lg", data: { turbo_confirm: "Are you sure you want to send this campaign now to #{pluralize(campaign.list.subscribers_count, 'subscriber')}?" } %>
+
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#scheduleModal">
+          Schedule for Later
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Right Column: Email Preview -->
+  <div class="col-md-7">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Email Preview</h5>
+      <div class="btn-group" role="group">
+        <input type="radio" class="btn-check" name="preview-mode" id="preview-desktop" autocomplete="off" checked>
+        <label class="btn btn-outline-secondary btn-sm" for="preview-desktop">
+          <svg width="16" height="16" fill="currentColor" class="bi bi-laptop" viewBox="0 0 16 16">
+            <path d="M13.5 3a.5.5 0 0 1 .5.5V11H2V3.5a.5.5 0 0 1 .5-.5h11zm-11-1A1.5 1.5 0 0 0 1 3.5V12h14V3.5A1.5 1.5 0 0 0 13.5 2h-11zM0 12.5h16a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5z"/>
+          </svg>
+          Desktop
+        </label>
+
+        <input type="radio" class="btn-check" name="preview-mode" id="preview-mobile" autocomplete="off">
+        <label class="btn btn-outline-secondary btn-sm" for="preview-mobile">
+          <svg width="16" height="16" fill="currentColor" class="bi bi-phone" viewBox="0 0 16 16">
+            <path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z"/>
+            <path d="M8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+          </svg>
+          Mobile
+        </label>
+      </div>
+    </div>
+
+    <div class="card border">
+      <div class="card-body p-0">
+        <div id="email-preview-container" class="preview-desktop">
+          <div class="preview-frame" id="email-preview-frame">
+            <% if campaign.body_markdown.present? && campaign.template %>
+              <%
+                sample_subscriber = campaign.list.subscribers.first || Subscriber.new(
+                  email: 'subscriber@example.com',
+                  custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+                )
+              %>
+              <%= raw campaign.template.render_for(sample_subscriber, campaign) %>
+            <% else %>
+              <div class="text-center text-muted py-5">
+                <p>No content to preview</p>
+                <small>Go back and add email content</small>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <%= form_with(url: schedule_campaign_path(campaign), method: :post) do |f| %>
+        <div class="modal-header">
+          <h5 class="modal-title" id="scheduleModalLabel">Schedule Campaign</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <%= label_tag :scheduled_at, "Send Date & Time", class: "form-label" %>
+            <%= datetime_field_tag :scheduled_at, 1.hour.from_now.strftime("%Y-%m-%dT%H:%M"), class: "form-control", required: true %>
+            <small class="text-muted">Campaign will be sent at the specified time</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <%= f.submit "Schedule Campaign", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<style>
+#email-preview-container {
+  background: #f4f4f4;
+  padding: 20px;
+  min-height: 600px;
+  transition: all 0.3s ease;
+}
+
+#email-preview-container.preview-desktop .preview-frame {
+  max-width: 100%;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#email-preview-container.preview-mobile .preview-frame {
+  max-width: 375px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.preview-frame {
+  overflow: auto;
+  max-height: 700px;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const desktopBtn = document.getElementById('preview-desktop');
+  const mobileBtn = document.getElementById('preview-mobile');
+  const container = document.getElementById('email-preview-container');
+
+  if (desktopBtn && mobileBtn && container) {
+    desktopBtn.addEventListener('change', function() {
+      container.className = 'preview-desktop';
+    });
+
+    mobileBtn.addEventListener('change', function() {
+      container.className = 'preview-mobile';
+    });
+  }
+});
+
+document.addEventListener('turbo:load', function() {
+  const desktopBtn = document.getElementById('preview-desktop');
+  const mobileBtn = document.getElementById('preview-mobile');
+  const container = document.getElementById('email-preview-container');
+
+  if (desktopBtn && mobileBtn && container) {
+    desktopBtn.addEventListener('change', function() {
+      container.className = 'preview-desktop';
+    });
+
+    mobileBtn.addEventListener('change', function() {
+      container.className = 'preview-mobile';
+    });
+  }
+});
+</script>

@@ -1,0 +1,112 @@
+/*
+ * This is a manifest file that'll be compiled into application.css.
+ *
+ * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
+ * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
+ * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
+ * depending on specificity.
+ *
+ * Consider organizing styles into separate files for maintainability.
+ */
+
+/* Bootstrap Customizations */
+:root {
+  --bs-primary: #4CAF50;
+  --bs-primary-rgb: 76, 175, 80;
+  --bs-success: #4CAF50;
+  --bs-success-rgb: 76, 175, 80;
+}
+
+.btn-primary {
+  --bs-btn-bg: #4CAF50;
+  --bs-btn-border-color: #4CAF50;
+  --bs-btn-hover-bg: #45a049;
+  --bs-btn-hover-border-color: #45a049;
+}
+
+/* Auth pages gradient background */
+.auth-gradient-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Brand styling */
+.brand {
+  color: #4CAF50 !important;
+  font-weight: 700;
+}
+
+/* Navbar customizations */
+.navbar-brand .brand-link {
+  color: #4CAF50;
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.navbar .nav-link.active {
+  background-color: #e8f5e9;
+  color: #4CAF50 !important;
+  font-weight: 600;
+  border-radius: 0.25rem;
+}
+
+/* Status badges */
+.badge.status-draft {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+.badge.status-scheduled {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge.status-sending {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.badge.status-sent {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge.status-paused {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.badge.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Quota bar */
+.quota-bar {
+  height: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.quota-fill {
+  height: 100%;
+  background-color: #4CAF50;
+  transition: width 0.3s ease;
+}
+
+/* Subscription form iframe support */
+.subscription-iframe-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+}

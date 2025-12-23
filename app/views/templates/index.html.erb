@@ -1,0 +1,61 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fs-2 mb-0">Email Templates</h1>
+    <%= link_to "New Template", new_template_path, class: "btn btn-primary" %>
+  </div>
+
+  <% if @templates.any? %>
+    <div class="row g-4">
+      <% @templates.each do |template| %>
+        <div class="col-md-6 col-xl-4">
+          <div class="card border h-100">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="card-title mb-0">
+                  <%= link_to template.name, template, class: "text-decoration-none" %>
+                </h5>
+                <% if template.is_default %>
+                  <span class="badge bg-primary">Default</span>
+                <% end %>
+              </div>
+
+              <% if template.description.present? %>
+                <p class="card-text text-muted small mb-3"><%= truncate(template.description, length: 100) %></p>
+              <% end %>
+
+              <div class="mb-3">
+                <span class="badge bg-secondary small">
+                  <% if template.html_content.present? %>
+                    HTML
+                  <% elsif template.markdown_content.present? %>
+                    Markdown
+                  <% else %>
+                    Empty
+                  <% end %>
+                </span>
+                <span class="text-muted small ms-2"><%= template.campaigns.count %> campaigns</span>
+              </div>
+
+              <div class="d-flex gap-2">
+                <%= link_to "View", template, class: "btn btn-sm btn-outline-primary" %>
+                <%= link_to "Edit", edit_template_path(template), class: "btn btn-sm btn-outline-secondary" %>
+                <%= button_to "Delete", template, method: :delete, data: { turbo_confirm: "Are you sure? This cannot be undone." }, class: "btn btn-sm btn-outline-danger" %>
+              </div>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+              <small class="text-muted">Created <%= time_ago_in_words(template.created_at) %> ago</small>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="card border border-2 border-dashed">
+      <div class="card-body text-center py-5">
+        <h5 class="mb-3">No templates yet</h5>
+        <p class="text-muted mb-4">Create reusable email templates for your campaigns.</p>
+        <%= link_to "Create Template", new_template_path, class: "btn btn-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>

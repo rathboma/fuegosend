@@ -1,0 +1,137 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="mb-4">
+    <h1 class="fs-2 mb-2">Dashboard</h1>
+    <p class="text-muted">Welcome back, <%= current_user.first_name || current_user.email %></p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3">
+      <div class="card border h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-2">Lists</div>
+          <div class="fs-2 fw-semibold mb-2"><%= @stats[:total_lists] %></div>
+          <%= link_to "Manage Lists", lists_path, class: "btn btn-link p-0 text-decoration-none" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card border h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-2">Active Subscribers</div>
+          <div class="fs-2 fw-semibold mb-2"><%= number_with_delimiter(@stats[:total_subscribers]) %></div>
+          <%= link_to "View Subscribers", subscribers_path, class: "btn btn-link p-0 text-decoration-none" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card border h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-2">Total Campaigns</div>
+          <div class="fs-2 fw-semibold mb-2"><%= @stats[:total_campaigns] %></div>
+          <%= link_to "Create Campaign", new_campaign_path, class: "btn btn-link p-0 text-decoration-none" %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+      <div class="card border h-100">
+        <div class="card-body">
+          <div class="text-muted small mb-2">Sending Now</div>
+          <div class="fs-2 fw-semibold mb-2"><%= @stats[:campaigns_sending] %></div>
+          <% if @stats[:campaigns_scheduled] > 0 %>
+            <div class="text-muted small"><%= @stats[:campaigns_scheduled] %> scheduled</div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SES Quota -->
+  <div class="mb-4">
+    <h2 class="fs-4 mb-3">SES Sending Quota</h2>
+    <div class="card border">
+      <div class="card-body">
+        <div class="quota-bar mb-3">
+          <div class="quota-fill" style="width: <%= @ses_quota[:percent_used] %>%"></div>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <span class="text-muted small">Sent today:</span>
+            <span class="fw-semibold ms-2"><%= number_with_delimiter(@ses_quota[:sent_today]) %> / <%= number_with_delimiter(@ses_quota[:max_daily]) %></span>
+          </div>
+          <div class="col-md-4">
+            <span class="text-muted small">Max send rate:</span>
+            <span class="fw-semibold ms-2"><%= @ses_quota[:max_rate] %> emails/second</span>
+          </div>
+          <div class="col-md-4">
+            <span class="text-muted small">Usage:</span>
+            <span class="fw-semibold ms-2 <%= 'text-warning' if @ses_quota[:percent_used] > 80 %>">
+              <%= @ses_quota[:percent_used] %>%
+            </span>
+          </div>
+        </div>
+        <%= link_to "Account Settings", account_path, class: "btn btn-outline-secondary btn-sm" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Campaigns -->
+  <div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="fs-4 mb-0">Recent Campaigns</h2>
+      <%= link_to "View All", campaigns_path, class: "btn btn-link text-decoration-none" %>
+    </div>
+
+    <% if @recent_campaigns.any? %>
+      <div class="card border">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Campaign</th>
+                <th>Status</th>
+                <th>Recipients</th>
+                <th>Sent</th>
+                <th>Open Rate</th>
+                <th>Click Rate</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_campaigns.each do |campaign| %>
+                <tr>
+                  <td>
+                    <div class="fw-semibold"><%= link_to campaign.name, campaign_path(campaign), class: "text-decoration-none" %></div>
+                    <div class="text-muted small"><%= campaign.subject %></div>
+                  </td>
+                  <td>
+                    <span class="badge status-<%= campaign.status %>">
+                      <%= campaign.status.titleize %>
+                    </span>
+                  </td>
+                  <td><%= number_with_delimiter(campaign.total_recipients) %></td>
+                  <td><%= number_with_delimiter(campaign.sent_count) %></td>
+                  <td><%= campaign.open_rate %>%</td>
+                  <td><%= campaign.click_rate %>%</td>
+                  <td>
+                    <%= link_to "View", campaign_path(campaign), class: "btn btn-sm btn-outline-secondary" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% else %>
+      <div class="card border border-2 border-dashed">
+        <div class="card-body text-center py-5">
+          <p class="text-muted mb-3">No campaigns yet.</p>
+          <%= link_to "Create Your First Campaign", new_campaign_path, class: "btn btn-primary" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

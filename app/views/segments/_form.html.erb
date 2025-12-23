@@ -1,0 +1,84 @@
+<%= form_with(model: segment, local: true) do |f| %>
+  <% if segment.errors.any? %>
+    <div class="alert alert-danger small mb-4" role="alert">
+      <strong><%= pluralize(segment.errors.count, "error") %> prohibited this segment from being saved:</strong>
+      <ul class="mb-0 mt-2">
+        <% segment.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :name, "Segment Name *", class: "form-label" %>
+    <%= f.text_field :name, class: "form-control", placeholder: "e.g. Engaged Subscribers", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :list_id, "List *", class: "form-label" %>
+    <%= f.select :list_id, options_for_select(@lists.map { |l| [l.name, l.id] }, segment.list_id), { prompt: "Select a list" }, { class: "form-select", required: true } %>
+    <small class="text-muted">The list from which subscribers will be filtered</small>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :description, class: "form-label" %>
+    <%= f.text_area :description, class: "form-control", rows: 2, placeholder: "Optional description of this segment" %>
+  </div>
+
+  <hr class="my-4">
+
+  <h5 class="mb-3">Segment Criteria</h5>
+
+  <div class="alert alert-info small mb-3">
+    <strong>Available Fields:</strong>
+    <ul class="mb-0 mt-2">
+      <li><code>email</code> - Email address (operators: equals, not_equals, contains, starts_with, ends_with)</li>
+      <li><code>status</code> - Subscriber status (operators: equals)</li>
+      <li><code>created_at</code> or <code>updated_at</code> - Dates (operators: before, after, equals)</li>
+      <li><code>custom_attributes.field_name</code> - Custom attribute (operators: equals, not_equals, contains, exists, not_exists)</li>
+    </ul>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Criteria (JSON Format)</label>
+    <%= f.text_area :criteria, value: segment.criteria.to_json, class: "form-control font-monospace", rows: 10, placeholder: '[]' %>
+    <small class="text-muted d-block mt-2">
+      Example: <code>[{"field":"email","operator":"contains","value":"@gmail.com"}]</code>
+    </small>
+  </div>
+
+  <div class="alert alert-warning small">
+    <strong>Note:</strong> Multiple criteria are combined with AND logic. All conditions must match for a subscriber to be included in the segment.
+  </div>
+
+  <div class="mb-4">
+    <strong class="d-block mb-2">Example Criteria:</strong>
+    <div class="card bg-light">
+      <div class="card-body small">
+        <pre class="mb-0">[
+  {
+    "field": "email",
+    "operator": "contains",
+    "value": "@gmail.com"
+  },
+  {
+    "field": "custom_attributes.company",
+    "operator": "equals",
+    "value": "Acme Corp"
+  },
+  {
+    "field": "created_at",
+    "operator": "after",
+    "value": "2024-01-01"
+  }
+]</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= f.submit segment.new_record? ? "Create Segment" : "Update Segment", class: "btn btn-primary" %>
+    <%= link_to "Cancel", segment.new_record? ? segments_path : segment, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

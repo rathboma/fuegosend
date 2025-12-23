@@ -1,0 +1,98 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="fs-2 mb-2">Subscribers</h1>
+      <% if @list.present? %>
+        <p class="text-muted mb-0">Showing subscribers in <%= link_to @list.name, @list %></p>
+      <% end %>
+    </div>
+    <%= link_to "Add Subscriber", new_subscriber_path, class: "btn btn-primary" %>
+  </div>
+
+  <!-- Filters -->
+  <div class="card border mb-4">
+    <div class="card-body">
+      <%= form_with url: subscribers_path, method: :get, local: true, class: "row g-3" do |f| %>
+        <div class="col-md-4">
+          <%= f.label :search, "Search by email", class: "form-label small" %>
+          <%= f.text_field :search, value: params[:search], class: "form-control form-control-sm", placeholder: "subscriber@example.com" %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :status, "Status", class: "form-label small" %>
+          <%= f.select :status, options_for_select([["All", ""], ["Active", "active"], ["Unsubscribed", "unsubscribed"], ["Bounced", "bounced"], ["Complained", "complained"]], params[:status]), {}, class: "form-select form-select-sm" %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :list_id, "List", class: "form-label small" %>
+          <%= f.select :list_id, options_for_select([["All Lists", ""]] + current_account.lists.pluck(:name, :id), params[:list_id]), {}, class: "form-select form-select-sm" %>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <%= f.submit "Filter", class: "btn btn-sm btn-outline-primary w-100" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Subscribers Table -->
+  <% if @subscribers.any? %>
+    <div class="card border mb-3">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Lists</th>
+              <th>Source</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @subscribers.each do |subscriber| %>
+              <tr>
+                <td><%= link_to subscriber.email, subscriber, class: "text-decoration-none" %></td>
+                <td><span class="badge status-<%= subscriber.status %>"><%= subscriber.status.titleize %></span></td>
+                <td>
+                  <% active_lists = subscriber.list_subscriptions.where(status: "active").includes(:list).limit(3) %>
+                  <% if active_lists.any? %>
+                    <%= active_lists.map { |ls| ls.list.name }.join(", ") %>
+                    <% if subscriber.list_subscriptions.where(status: "active").count > 3 %>
+                      <span class="text-muted">+<%= subscriber.list_subscriptions.where(status: "active").count - 3 %> more</span>
+                    <% end %>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
+                </td>
+                <td><%= subscriber.source || "—" %></td>
+                <td><%= time_ago_in_words(subscriber.created_at) %> ago</td>
+                <td>
+                  <div class="d-flex gap-1">
+                    <%= link_to "View", subscriber, class: "btn btn-sm btn-outline-primary" %>
+                    <%= link_to "Edit", edit_subscriber_path(subscriber), class: "btn btn-sm btn-outline-secondary" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination Info -->
+    <div class="text-muted small">
+      Showing <%= @subscribers.size %> of <%= number_with_delimiter(@total_count) %> subscribers
+    </div>
+  <% else %>
+    <div class="card border border-2 border-dashed">
+      <div class="card-body text-center py-5">
+        <h5 class="mb-3">No subscribers found</h5>
+        <% if params[:search].present? || params[:status].present? || params[:list_id].present? %>
+          <p class="text-muted mb-4">Try adjusting your filters or <%= link_to "view all subscribers", subscribers_path %>.</p>
+        <% else %>
+          <p class="text-muted mb-4">Add your first subscriber to get started.</p>
+          <%= link_to "Add Subscriber", new_subscriber_path, class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

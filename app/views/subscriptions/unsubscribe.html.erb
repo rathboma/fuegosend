@@ -1,0 +1,34 @@
+<div class="container py-5" style="max-width: 600px;">
+  <div class="text-center mb-4">
+    <h1 class="fs-2">Unsubscribe</h1>
+  </div>
+
+  <% if @unsubscribed %>
+    <div class="alert alert-success text-center" role="alert">
+      <h2 class="h5 mb-2">You've been unsubscribed</h2>
+      <p class="mb-2">You have been successfully unsubscribed from <%= @subscriber.email %>.</p>
+      <p class="mb-2">You will no longer receive emails from our campaigns.</p>
+      <p class="mb-0">We're sorry to see you go!</p>
+    </div>
+  <% elsif @already_unsubscribed %>
+    <div class="alert alert-info text-center" role="alert">
+      <h2 class="h5 mb-2">Already unsubscribed</h2>
+      <p class="mb-0">The email address <%= @subscriber.email %> is already unsubscribed.</p>
+    </div>
+  <% else %>
+    <div class="text-center">
+      <p class="text-muted mb-3">Are you sure you want to unsubscribe <%= @subscriber.email %> from "<%= @campaign.name %>"?</p>
+      <p class="text-muted mb-4">You will no longer receive emails from this campaign or any other campaigns from this sender.</p>
+
+      <%= form_with url: unsubscribe_confirm_path(params[:token]), method: :post, local: true do |f| %>
+        <div class="mb-3">
+          <%= f.submit "Yes, unsubscribe me", class: "btn btn-danger" %>
+        </div>
+      <% end %>
+
+      <p class="text-muted small mb-0">
+        If you clicked this link by mistake, you can simply close this page.
+      </p>
+    </div>
+  <% end %>
+</div>

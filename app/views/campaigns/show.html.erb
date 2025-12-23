@@ -1,0 +1,256 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><%= link_to "Campaigns", campaigns_path %></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= @campaign.name %></li>
+        </ol>
+      </nav>
+      <h1 class="fs-2 mb-2"><%= @campaign.name %></h1>
+      <span class="badge status-<%= @campaign.status %>"><%= @campaign.status.titleize %></span>
+    </div>
+    <div class="d-flex gap-2">
+      <% if @campaign.draft? %>
+        <%= link_to "Edit", edit_campaign_path(@campaign), class: "btn btn-outline-secondary" %>
+        <%= button_to "Send Now", send_now_campaign_path(@campaign), method: :post, class: "btn btn-success", data: { turbo_confirm: "Are you sure you want to send this campaign now?" } %>
+      <% elsif @campaign.scheduled? %>
+        <%= button_to "Send Now", send_now_campaign_path(@campaign), method: :post, class: "btn btn-success", data: { turbo_confirm: "Send now instead of waiting?" } %>
+        <%= button_to "Cancel", cancel_campaign_path(@campaign), method: :post, class: "btn btn-outline-danger", data: { turbo_confirm: "Cancel this scheduled campaign?" } %>
+      <% elsif @campaign.sending? %>
+        <%= button_to "Pause", pause_campaign_path(@campaign), method: :post, class: "btn btn-warning", data: { turbo_confirm: "Pause sending?" } %>
+      <% elsif @campaign.paused? %>
+        <%= button_to "Resume", resume_campaign_path(@campaign), method: :post, class: "btn btn-success", data: { turbo_confirm: "Resume sending?" } %>
+      <% end %>
+      <%= button_to "Delete", @campaign, method: :delete, class: "btn btn-outline-danger", data: { turbo_confirm: "Delete this campaign permanently?" } %>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Total Recipients</div>
+          <div class="fs-3 fw-semibold"><%= number_with_delimiter(@campaign.total_recipients) %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Sent</div>
+          <div class="fs-3 fw-semibold"><%= number_with_delimiter(@campaign.sent_count) %></div>
+          <% if @campaign.total_recipients > 0 %>
+            <small class="text-muted"><%= @campaign.percent_complete %>% complete</small>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Opens</div>
+          <div class="fs-3 fw-semibold"><%= @campaign.open_rate %>%</div>
+          <small class="text-muted"><%= number_with_delimiter(@campaign.opened_count) %> opened</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Clicks</div>
+          <div class="fs-3 fw-semibold"><%= @campaign.click_rate %>%</div>
+          <small class="text-muted"><%= number_with_delimiter(@campaign.clicked_count) %> clicked</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <% if @campaign.sending? && @campaign.total_recipients > 0 %>
+    <div class="card border mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">Sending Progress</h5>
+          <span class="badge bg-primary"><%= @campaign.percent_complete %>%</span>
+        </div>
+        <div class="progress mb-2" style="height: 20px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: <%= @campaign.percent_complete %>%"></div>
+        </div>
+        <small class="text-muted">
+          <%= number_with_delimiter(@campaign.sent_count) %> of <%= number_with_delimiter(@campaign.total_recipients) %> sent
+        </small>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Campaign Details -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Campaign Details</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="text-muted small mb-1">Name</div>
+              <div class="fw-semibold"><%= @campaign.name %></div>
+            </div>
+            <div class="col-12">
+              <div class="text-muted small mb-1">Subject</div>
+              <div class="fw-semibold"><%= @campaign.subject %></div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small mb-1">From Name</div>
+              <div class="fw-semibold"><%= @campaign.from_name %></div>
+            </div>
+            <div class="col-6">
+              <div class="text-muted small mb-1">From Email</div>
+              <div class="fw-semibold"><%= @campaign.from_email %></div>
+            </div>
+            <div class="col-12">
+              <div class="text-muted small mb-1">List</div>
+              <div class="fw-semibold"><%= link_to @campaign.list.name, @campaign.list, class: "text-decoration-none" %></div>
+            </div>
+            <% if @campaign.segment %>
+              <div class="col-12">
+                <div class="text-muted small mb-1">Segment</div>
+                <div class="fw-semibold"><%= link_to @campaign.segment.name, @campaign.segment, class: "text-decoration-none" %></div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border h-100">
+        <div class="card-body">
+          <h5 class="card-title mb-3">Timing</h5>
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="text-muted small mb-1">Created</div>
+              <div class="fw-semibold"><%= @campaign.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+            </div>
+            <% if @campaign.scheduled_at %>
+              <div class="col-12">
+                <div class="text-muted small mb-1">Scheduled For</div>
+                <div class="fw-semibold"><%= @campaign.scheduled_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+              </div>
+            <% end %>
+            <% if @campaign.started_sending_at %>
+              <div class="col-12">
+                <div class="text-muted small mb-1">Started Sending</div>
+                <div class="fw-semibold"><%= @campaign.started_sending_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+              </div>
+            <% end %>
+            <% if @campaign.finished_sending_at %>
+              <div class="col-12">
+                <div class="text-muted small mb-1">Finished Sending</div>
+                <div class="fw-semibold"><%= @campaign.finished_sending_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Delivered</div>
+          <div class="fs-4 fw-semibold"><%= number_with_delimiter(@campaign.delivered_count) %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Bounced</div>
+          <div class="fs-4 fw-semibold"><%= number_with_delimiter(@campaign.bounced_count) %></div>
+          <small class="text-muted"><%= @campaign.bounce_rate %>%</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Complained</div>
+          <div class="fs-4 fw-semibold"><%= number_with_delimiter(@campaign.complained_count) %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Unsubscribed</div>
+          <div class="fs-4 fw-semibold"><%= number_with_delimiter(@campaign.unsubscribed_count) %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Body Preview -->
+  <% if @campaign.body_markdown.present? %>
+    <div class="mb-4">
+      <h2 class="fs-4 mb-3">Email Content Preview</h2>
+      <div class="card border">
+        <div class="card-body">
+          <div class="border p-3" style="max-height: 400px; overflow-y: auto; background: #f4f4f4;">
+            <% if @campaign.template %>
+              <%
+                sample_subscriber = @campaign.list.subscribers.first || Subscriber.new(
+                  email: 'subscriber@example.com',
+                  custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+                )
+              %>
+              <%= raw @campaign.template.render_for(sample_subscriber, @campaign) %>
+            <% else %>
+              <%= raw Kramdown::Document.new(@campaign.body_markdown).to_html %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Recent Sends -->
+  <% if @recent_sends.any? %>
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fs-4 mb-0">Recent Sends</h2>
+        <%= link_to "View Full Stats", stats_campaign_path(@campaign), class: "btn btn-sm btn-outline-primary" %>
+      </div>
+
+      <div class="card border">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Subscriber</th>
+                <th>Status</th>
+                <th>Sent</th>
+                <th>Opened</th>
+                <th>Clicked</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_sends.each do |send| %>
+                <tr>
+                  <td><%= link_to send.subscriber.email, send.subscriber, class: "text-decoration-none" %></td>
+                  <td><span class="badge status-<%= send.status %>"><%= send.status.titleize %></span></td>
+                  <td><%= send.sent_at ? time_ago_in_words(send.sent_at) + " ago" : "—" %></td>
+                  <td><%= send.opened_at ? time_ago_in_words(send.opened_at) + " ago" : "—" %></td>
+                  <td><%= send.clicked_at ? time_ago_in_words(send.clicked_at) + " ago" : "—" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,224 @@
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+
+<!-- Marked.js for markdown rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+
+<h5 class="mb-3">Email Content</h5>
+
+<div class="alert alert-info small mb-3">
+  <strong>Template:</strong> <%= @templates.find_by(id: campaign.template_id)&.name || "No template selected" %>
+  <% if @step == 2 %>
+    <%= link_to "← Change template", campaign.persisted? ? edit_campaign_path(campaign, step: 1) : new_campaign_path(step: 1), class: "ms-2" %>
+  <% end %>
+</div>
+
+<div class="row g-4">
+  <!-- Markdown Editor (Left) -->
+  <div class="col-md-6">
+    <div class="mb-2">
+      <strong>Markdown Content</strong>
+      <small class="text-muted ms-2">Your email content</small>
+    </div>
+    <div class="card border">
+      <div class="card-body p-0">
+        <%= f.text_area :body_markdown, class: "d-none", id: "campaign_body_markdown" %>
+        <textarea id="markdown-editor" style="display: none;"><%= campaign.body_markdown %></textarea>
+      </div>
+    </div>
+    <div class="mt-2">
+      <small class="text-muted">
+        <strong>Merge Tags:</strong>
+        <code>{{email}}</code>,
+        <code>{{name}}</code>,
+        <code>{{custom_first_name}}</code>,
+        <code>{{custom_company}}</code>,
+        <code>{{logo_url}}</code>,
+        <code>{{unsubscribe_url}}</code>
+      </small>
+    </div>
+  </div>
+
+  <!-- Preview (Right) -->
+  <div class="col-md-6">
+    <div class="mb-2">
+      <strong>Preview</strong>
+      <small class="text-muted ms-2">How it will look to subscribers</small>
+    </div>
+    <div class="card border">
+      <div class="card-body" style="min-height: 600px; max-height: 600px; overflow-y: auto;" id="email-preview">
+        <div class="text-muted text-center py-5">
+          Loading preview...
+        </div>
+      </div>
+    </div>
+    <div class="mt-2">
+      <small class="text-muted">Preview updates automatically as you type</small>
+    </div>
+  </div>
+</div>
+
+<%= f.hidden_field :step, value: 2 %>
+
+<div class="d-flex gap-2 mt-4">
+  <%= link_to "← Back to Details", campaign.persisted? ? edit_campaign_path(campaign, step: 1) : new_campaign_path(step: 1), class: "btn btn-outline-secondary" %>
+  <%= f.submit "Continue to Review →", class: "btn btn-primary" %>
+</div>
+
+<script>
+(function() {
+  function initializeCodeMirror() {
+    // Check if already initialized
+    if (document.querySelector('.CodeMirror')) {
+      return;
+    }
+
+    // Initialize CodeMirror
+    const textarea = document.getElementById('markdown-editor');
+    const hiddenField = document.getElementById('campaign_body_markdown');
+    const previewPane = document.getElementById('email-preview');
+
+    if (!textarea || !hiddenField || !previewPane) {
+      return;
+    }
+
+    const editor = CodeMirror.fromTextArea(textarea, {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      viewportMargin: Infinity,
+      height: '600px'
+    });
+
+    editor.setSize(null, '600px');
+
+    // Get template content
+    const templateId = document.getElementById('campaign_template_id')?.value;
+    let templateHtml = '';
+
+    <% if campaign.template_id %>
+      <% template = @templates.find_by(id: campaign.template_id) %>
+      <% if template %>
+        templateHtml = `<%= raw template.html_content&.gsub('`', '\`') || template.markdown_content&.gsub('`', '\`') || '' %>`;
+      <% end %>
+    <% end %>
+
+    // Function to update preview
+    function updatePreview() {
+      const markdown = editor.getValue();
+      const html = marked.parse(markdown);
+
+      // Sync with hidden field
+      hiddenField.value = markdown;
+
+      // Apply template if available
+      let finalHtml = html;
+      if (templateHtml) {
+        // Wrap content in email-content div for proper styling
+        const wrappedContent = html;
+
+        // Replace content placeholders in template (both double and triple braces for raw HTML)
+        finalHtml = templateHtml
+          .replace(/\{\{\{content\}\}\}/g, wrappedContent)
+          .replace(/\{\{\{body\}\}\}/g, wrappedContent)
+          .replace(/\{\{\{email_content\}\}\}/g, wrappedContent)
+          .replace(/\{\{content\}\}/g, wrappedContent)
+          .replace(/\{\{body\}\}/g, wrappedContent)
+          .replace(/\{\{email_content\}\}/g, wrappedContent);
+      } else {
+        // No template, wrap in simple container
+        finalHtml = '<div style="max-width: 600px; margin: 0 auto; padding: 20px;">' + html + '</div>';
+      }
+
+      // Get logo URL with fallback to placeholder
+      const logoUrl = '<%= @campaign.account.brand_logo.presence if @campaign.persisted? %>' || '/logo-placeholder.png';
+
+      // Replace example merge tags for preview
+      finalHtml = finalHtml
+        .replace(/\{\{email\}\}/g, 'subscriber@example.com')
+        .replace(/\{\{custom_(\w+)\}\}/g, 'John Doe')
+        .replace(/\{\{name\}\}/g, 'John Doe')
+        .replace(/\{\{first_name\}\}/g, 'John')
+        .replace(/\{\{last_name\}\}/g, 'Doe')
+        .replace(/\{\{unsubscribe_url\}\}/g, '#unsubscribe')
+        .replace(/\{\{campaign_name\}\}/g, document.getElementById('campaign_name')?.value || 'Campaign Name')
+        .replace(/\{\{campaign_subject\}\}/g, document.getElementById('campaign_subject')?.value || 'Email Subject')
+        .replace(/\{\{account_name\}\}/g, '<%= @campaign.account.name if @campaign.persisted? %>' || 'Your Company')
+        .replace(/\{\{logo_url\}\}/g, logoUrl)
+        .replace(/\{\{current_year\}\}/g, new Date().getFullYear());
+
+      previewPane.innerHTML = finalHtml;
+    }
+
+    // Update preview on change
+    editor.on('change', function() {
+      updatePreview();
+    });
+
+    // Initial preview
+    updatePreview();
+
+    // Update preview before form submit
+    const form = document.getElementById('campaign-form');
+    if (form) {
+      form.addEventListener('submit', function() {
+        hiddenField.value = editor.getValue();
+      });
+    }
+  }
+
+  // Initialize on both DOMContentLoaded and turbo:load
+  document.addEventListener('DOMContentLoaded', initializeCodeMirror);
+  document.addEventListener('turbo:load', initializeCodeMirror);
+
+  // Also try to initialize immediately if DOM is already loaded
+  if (document.readyState === 'loading') {
+    // Document still loading, event listeners will handle it
+  } else {
+    // DOM already loaded
+    initializeCodeMirror();
+  }
+})();
+</script>
+
+<style>
+.CodeMirror {
+  border: 1px solid #dee2e6;
+  font-size: 14px;
+  height: 600px;
+}
+
+.CodeMirror-scroll {
+  min-height: 600px;
+}
+
+#email-preview {
+  background: #f4f4f4;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 20px;
+}
+
+#email-preview h1, #email-preview h2, #email-preview h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+#email-preview p {
+  margin-bottom: 1rem;
+}
+
+#email-preview a {
+  color: #4CAF50;
+  text-decoration: none;
+}
+
+#email-preview a:hover {
+  text-decoration: underline;
+}
+</style>

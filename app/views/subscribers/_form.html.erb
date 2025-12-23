@@ -1,0 +1,94 @@
+<%= form_with(model: subscriber, local: true) do |f| %>
+  <% if subscriber.errors.any? %>
+    <div class="alert alert-danger small mb-4" role="alert">
+      <strong><%= pluralize(subscriber.errors.count, "error") %> prohibited this subscriber from being saved:</strong>
+      <ul class="mb-0 mt-2">
+        <% subscriber.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :email, "Email Address *", class: "form-label" %>
+    <%= f.email_field :email, class: "form-control", placeholder: "subscriber@example.com", required: true, disabled: subscriber.persisted? %>
+    <% if subscriber.persisted? %>
+      <small class="text-muted">Email cannot be changed after creation</small>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
+    <%= f.label :status, class: "form-label" %>
+    <%= f.select :status, [["Active", "active"], ["Unsubscribed", "unsubscribed"], ["Bounced", "bounced"], ["Complained", "complained"]], {}, class: "form-select" %>
+  </div>
+
+  <div class="mb-4">
+    <%= f.label :source, class: "form-label" %>
+    <%= f.text_field :source, class: "form-control", placeholder: "e.g. website, import, api" %>
+    <small class="text-muted">Where did this subscriber come from?</small>
+  </div>
+
+  <hr class="my-4">
+
+  <h5 class="mb-3">List Subscriptions</h5>
+  <div class="mb-4">
+    <% @lists.each do |list| %>
+      <div class="form-check mb-2">
+        <%= check_box_tag "subscriber[list_ids][]", list.id, subscriber.lists.include?(list), class: "form-check-input", id: "list_#{list.id}" %>
+        <%= label_tag "list_#{list.id}", list.name, class: "form-check-label" %>
+        <% if list.description.present? %>
+          <br><small class="text-muted ms-4"><%= list.description %></small>
+        <% end %>
+      </div>
+    <% end %>
+    <%= hidden_field_tag "subscriber[list_ids][]", "" %>
+  </div>
+
+  <hr class="my-4">
+
+  <h5 class="mb-3">Custom Attributes</h5>
+  <p class="text-muted small mb-3">Add custom fields for this subscriber</p>
+
+  <div id="custom-attributes">
+    <% if subscriber.custom_attributes.present? && subscriber.custom_attributes.any? %>
+      <% subscriber.custom_attributes.each do |key, value| %>
+        <div class="row g-2 mb-2">
+          <div class="col-md-5">
+            <%= text_field_tag "subscriber[custom_attributes][#{key}]", key, class: "form-control form-control-sm", placeholder: "Attribute name", readonly: true %>
+          </div>
+          <div class="col-md-7">
+            <%= text_field_tag "subscriber[custom_attributes][#{key}]", value, class: "form-control form-control-sm", placeholder: "Value" %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="mb-4">
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addCustomAttribute()">+ Add Custom Attribute</button>
+  </div>
+
+  <div class="d-flex gap-2">
+    <%= f.submit subscriber.new_record? ? "Create Subscriber" : "Update Subscriber", class: "btn btn-primary" %>
+    <%= link_to "Cancel", subscriber.new_record? ? subscribers_path : subscriber, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>
+
+<script>
+function addCustomAttribute() {
+  const container = document.getElementById('custom-attributes');
+  const timestamp = Date.now();
+  const div = document.createElement('div');
+  div.className = 'row g-2 mb-2';
+  div.innerHTML = `
+    <div class="col-md-5">
+      <input type="text" name="subscriber[custom_attributes][new_${timestamp}]" class="form-control form-control-sm" placeholder="Attribute name">
+    </div>
+    <div class="col-md-7">
+      <input type="text" name="subscriber[custom_attributes][new_${timestamp}]" class="form-control form-control-sm" placeholder="Value">
+    </div>
+  `;
+  container.appendChild(div);
+}
+</script>

@@ -1,0 +1,17 @@
+<div class="container-fluid py-4" style="max-width: 800px;">
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><%= link_to "Segments", segments_path %></li>
+        <li class="breadcrumb-item active" aria-current="page">New Segment</li>
+      </ol>
+    </nav>
+    <h1 class="fs-2 mb-0">Create New Segment</h1>
+  </div>
+
+  <div class="card border">
+    <div class="card-body">
+      <%= render "form", segment: @segment %>
+    </div>
+  </div>
+</div>

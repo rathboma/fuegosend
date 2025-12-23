@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  campaign: one
+  original_url: MyString
+  token: MyString
+  click_count: 1
+  unique_click_count: 1
+
+two:
+  campaign: two
+  original_url: MyString
+  token: MyString
+  click_count: 1
+  unique_click_count: 1

@@ -1,0 +1,39 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  campaign: one
+  subscriber: one
+  ses_message_id: MyString
+  status: MyString
+  sent_at: 2025-12-22 22:40:35
+  delivered_at: 2025-12-22 22:40:35
+  bounced_at: 2025-12-22 22:40:35
+  bounce_type: MyString
+  bounce_reason: MyText
+  complained_at: 2025-12-22 22:40:35
+  opened_at: 2025-12-22 22:40:35
+  open_count: 1
+  first_clicked_at: 2025-12-22 22:40:35
+  click_count: 1
+  unsubscribed_at: 2025-12-22 22:40:35
+  retry_count: 1
+  next_retry_at: 2025-12-22 22:40:35
+
+two:
+  campaign: two
+  subscriber: two
+  ses_message_id: MyString
+  status: MyString
+  sent_at: 2025-12-22 22:40:35
+  delivered_at: 2025-12-22 22:40:35
+  bounced_at: 2025-12-22 22:40:35
+  bounce_type: MyString
+  bounce_reason: MyText
+  complained_at: 2025-12-22 22:40:35
+  opened_at: 2025-12-22 22:40:35
+  open_count: 1
+  first_clicked_at: 2025-12-22 22:40:35
+  click_count: 1
+  unsubscribed_at: 2025-12-22 22:40:35
+  retry_count: 1
+  next_retry_at: 2025-12-22 22:40:35

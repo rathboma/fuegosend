@@ -1,0 +1,27 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  subdomain: MyString
+  encrypted_aws_access_key_id: MyString
+  encrypted_aws_secret_access_key: MyString
+  aws_region: MyString
+  ses_max_send_rate: 1
+  ses_max_24_hour_send: 1
+  ses_sent_last_24_hours: 1
+  ses_quota_reset_at: 2025-12-22 21:24:46
+  active: false
+  paused_at: 2025-12-22 21:24:46
+
+two:
+  name: MyString
+  subdomain: MyString
+  encrypted_aws_access_key_id: MyString
+  encrypted_aws_secret_access_key: MyString
+  aws_region: MyString
+  ses_max_send_rate: 1
+  ses_max_24_hour_send: 1
+  ses_sent_last_24_hours: 1
+  ses_quota_reset_at: 2025-12-22 21:24:46
+  active: false
+  paused_at: 2025-12-22 21:24:46

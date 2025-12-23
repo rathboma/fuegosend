@@ -1,0 +1,20 @@
+<% content_width = (@step == 2 || @step == 3) ? '1400px' : '900px' %>
+
+<div class="container-fluid py-4" style="max-width: <%= content_width %>;">
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><%= link_to "Campaigns", campaigns_path %></li>
+        <li class="breadcrumb-item"><%= link_to @campaign.name, @campaign %></li>
+        <li class="breadcrumb-item active" aria-current="page">Edit</li>
+      </ol>
+    </nav>
+    <h1 class="fs-2 mb-0">Edit Campaign<% if @step %> - Step <%= @step %><% end %></h1>
+  </div>
+
+  <div class="card border">
+    <div class="card-body">
+      <%= render "form", campaign: @campaign %>
+    </div>
+  </div>
+</div>

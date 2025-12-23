@@ -1,0 +1,185 @@
+<div class="container-fluid py-4" style="max-width: 1400px;">
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><%= link_to "Campaigns", campaigns_path %></li>
+        <li class="breadcrumb-item"><%= link_to @campaign.name, @campaign %></li>
+        <li class="breadcrumb-item active" aria-current="page">Stats</li>
+      </ol>
+    </nav>
+    <h1 class="fs-2 mb-0"><%= @campaign.name %> - Statistics</h1>
+  </div>
+
+  <!-- Overall Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Total Recipients</div>
+          <div class="fs-2 fw-semibold text-primary"><%= number_with_delimiter(@stats[:total_recipients]) %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Sent</div>
+          <div class="fs-2 fw-semibold"><%= number_with_delimiter(@stats[:sent_count]) %></div>
+          <small class="text-muted"><%= @stats[:percent_complete] %>% complete</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Delivered</div>
+          <div class="fs-2 fw-semibold text-success"><%= number_with_delimiter(@stats[:delivered_count]) %></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border text-center">
+        <div class="card-body">
+          <div class="text-muted small mb-1">Failed</div>
+          <div class="fs-2 fw-semibold text-danger"><%= number_with_delimiter(@stats[:failed_count]) %></div>
+          <small class="text-muted"><%= @stats[:failure_rate] %>%</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Engagement Stats -->
+  <div class="mb-4">
+    <h2 class="fs-4 mb-3">Engagement</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card border h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Opens</h5>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fs-1 fw-semibold text-success"><%= @stats[:open_rate] %>%</span>
+              <span class="text-muted"><%= number_with_delimiter(@stats[:opened_count]) %> / <%= number_with_delimiter(@stats[:delivered_count]) %></span>
+            </div>
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: <%= @stats[:open_rate] %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card border h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Clicks</h5>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fs-1 fw-semibold text-primary"><%= @stats[:click_rate] %>%</span>
+              <span class="text-muted"><%= number_with_delimiter(@stats[:clicked_count]) %> / <%= number_with_delimiter(@stats[:delivered_count]) %></span>
+            </div>
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar bg-primary" role="progressbar" style="width: <%= @stats[:click_rate] %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Issues -->
+  <div class="mb-4">
+    <h2 class="fs-4 mb-3">Issues</h2>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card border text-center">
+          <div class="card-body">
+            <div class="text-muted small mb-1">Bounces</div>
+            <div class="fs-3 fw-semibold text-warning"><%= number_with_delimiter(@stats[:bounced_count]) %></div>
+            <small class="text-muted"><%= @stats[:bounce_rate] %>%</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border text-center">
+          <div class="card-body">
+            <div class="text-muted small mb-1">Complaints</div>
+            <div class="fs-3 fw-semibold text-danger"><%= number_with_delimiter(@stats[:complained_count]) %></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border text-center">
+          <div class="card-body">
+            <div class="text-muted small mb-1">Unsubscribes</div>
+            <div class="fs-3 fw-semibold text-secondary"><%= number_with_delimiter(@stats[:unsubscribed_count]) %></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Links -->
+  <% if @link_clicks.any? %>
+    <div class="mb-4">
+      <h2 class="fs-4 mb-3">Top Clicked Links</h2>
+      <div class="card border">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>URL</th>
+                <th class="text-end">Clicks</th>
+                <th class="text-end">Unique Clicks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @link_clicks.each do |link| %>
+                <tr>
+                  <td>
+                    <div class="text-truncate" style="max-width: 500px;">
+                      <%= link.url %>
+                    </div>
+                  </td>
+                  <td class="text-end"><%= number_with_delimiter(link.click_count) %></td>
+                  <td class="text-end"><%= number_with_delimiter(link.unique_click_count) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Summary -->
+  <div class="card border bg-light">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Campaign Summary</h5>
+      <div class="row g-3 small">
+        <div class="col-md-6">
+          <strong>Campaign:</strong> <%= @campaign.name %>
+        </div>
+        <div class="col-md-6">
+          <strong>List:</strong> <%= link_to @campaign.list.name, @campaign.list, class: "text-decoration-none" %>
+        </div>
+        <div class="col-md-6">
+          <strong>Status:</strong> <span class="badge status-<%= @campaign.status %>"><%= @campaign.status.titleize %></span>
+        </div>
+        <div class="col-md-6">
+          <strong>Created:</strong> <%= @campaign.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+        </div>
+        <% if @campaign.started_sending_at %>
+          <div class="col-md-6">
+            <strong>Started:</strong> <%= @campaign.started_sending_at.strftime("%B %d, %Y at %I:%M %p") %>
+          </div>
+        <% end %>
+        <% if @campaign.finished_sending_at %>
+          <div class="col-md-6">
+            <strong>Finished:</strong> <%= @campaign.finished_sending_at.strftime("%B %d, %Y at %I:%M %p") %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <%= link_to "← Back to Campaign", @campaign, class: "btn btn-outline-secondary" %>
+  </div>
+</div>

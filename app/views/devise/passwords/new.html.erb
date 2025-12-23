@@ -1,0 +1,28 @@
+<div class="auth-gradient-bg">
+  <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
+    <div class="card-body p-4">
+      <div class="text-center mb-4">
+        <h1 class="brand fs-2 mb-2">Fuegomail</h1>
+        <h2 class="h5 fw-normal mb-2">Reset your password</h2>
+        <p class="text-muted small">Enter your email and we'll send you reset instructions</p>
+      </div>
+
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <div class="mb-3">
+          <%= f.label :email, "Email address", class: "form-label" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "you@example.com" %>
+        </div>
+
+        <div class="d-grid mb-3">
+          <%= f.submit "Send reset instructions", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+
+      <div class="text-center pt-3 border-top">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,46 @@
+default: &default
+  dispatchers:
+    - polling_interval: 1
+      batch_size: 500
+  workers:
+    # High priority email queue - handles individual email sends
+    - queues: emails
+      threads: 5
+      processes: <%= ENV.fetch("EMAIL_WORKER_PROCESSES", 2) %>
+      polling_interval: 0.1
+      priority: 1
+
+    # Default queue - handles campaign orchestration and general jobs
+    - queues: default
+      threads: 3
+      processes: <%= ENV.fetch("DEFAULT_WORKER_PROCESSES", 1) %>
+      polling_interval: 0.1
+      priority: 2
+
+    # Webhook queue - handles incoming webhook processing
+    - queues: webhooks
+      threads: 2
+      processes: <%= ENV.fetch("WEBHOOK_WORKER_PROCESSES", 1) %>
+      polling_interval: 0.1
+      priority: 3
+
+development:
+  <<: *default
+  workers:
+    # Simpler setup for development - single process for all queues
+    - queues: "*"
+      threads: 3
+      processes: 1
+      polling_interval: 0.1
+
+test:
+  <<: *default
+  workers:
+    # Test environment - minimal setup
+    - queues: "*"
+      threads: 1
+      processes: 1
+      polling_interval: 0.1
+
+production:
+  <<: *default

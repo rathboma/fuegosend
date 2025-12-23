@@ -1,0 +1,68 @@
+<h5 class="mb-3">Campaign Details</h5>
+
+<div class="mb-3">
+  <%= f.label :name, "Campaign Name *", class: "form-label" %>
+  <%= f.text_field :name, class: "form-control", placeholder: "e.g. Monthly Newsletter - January 2024", required: true %>
+</div>
+
+<div class="mb-3">
+  <%= f.label :subject, "Email Subject *", class: "form-label" %>
+  <%= f.text_field :subject, class: "form-control", placeholder: "e.g. Your January Newsletter", required: true %>
+</div>
+
+<hr class="my-4">
+
+<h5 class="mb-3">Sender Information</h5>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-6">
+    <%= f.label :from_name, "From Name *", class: "form-label" %>
+    <%= f.text_field :from_name, class: "form-control", placeholder: "e.g. John Doe", required: true %>
+  </div>
+  <div class="col-md-6">
+    <%= f.label :from_email, "From Email *", class: "form-label" %>
+    <%= f.email_field :from_email, class: "form-control", placeholder: "e.g. sender@example.com", required: true %>
+    <small class="text-muted">Must be verified in AWS SES</small>
+  </div>
+</div>
+
+<div class="mb-3">
+  <%= f.label :reply_to_email, "Reply-To Email", class: "form-label" %>
+  <%= f.email_field :reply_to_email, class: "form-control", placeholder: "Optional: where replies should go" %>
+</div>
+
+<hr class="my-4">
+
+<h5 class="mb-3">Recipients</h5>
+
+<div class="mb-3">
+  <%= f.label :list_id, "List *", class: "form-label" %>
+  <%= f.select :list_id, options_for_select(@lists.map { |l| [l.name, l.id] }, campaign.list_id), { prompt: "Select a list" }, { class: "form-select", required: true } %>
+</div>
+
+<div class="mb-3">
+  <%= f.label :segment_id, "Segment (Optional)", class: "form-label" %>
+  <%= f.select :segment_id, options_for_select([["All subscribers", ""]], campaign.segment_id), {}, { class: "form-select" } %>
+  <small class="text-muted">Leave blank to send to all active subscribers in the list</small>
+</div>
+
+<hr class="my-4">
+
+<h5 class="mb-3">Email Template</h5>
+
+<div class="mb-4">
+  <%= f.label :template_id, "Template *", class: "form-label" %>
+  <%= f.select :template_id, options_for_select(@templates.map { |t| [t.name, t.id] }, campaign.template_id), { prompt: "Select a template" }, { class: "form-select", required: true, id: "campaign_template_id" } %>
+  <small class="text-muted">Your content will be rendered inside this template</small>
+</div>
+
+<%= f.hidden_field :step, value: 1 %>
+
+<div class="d-flex gap-2">
+  <% if campaign.persisted? %>
+    <%= link_to "Back to Campaign", campaign, class: "btn btn-outline-secondary" %>
+  <% else %>
+    <%= link_to "Cancel", campaigns_path, class: "btn btn-outline-secondary" %>
+  <% end %>
+  <%= f.submit campaign.persisted? ? "Save & Continue →" : "Save & Continue →", class: "btn btn-primary" %>
+</div>
