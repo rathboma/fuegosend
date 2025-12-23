@@ -1,0 +1,72 @@
+<div class="container-fluid py-4" style="max-width: 900px;">
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><%= link_to "Subscribers", subscribers_path %></li>
+        <li class="breadcrumb-item"><%= link_to "Import CSV", import_subscribers_path %></li>
+        <li class="breadcrumb-item active" aria-current="page">Results</li>
+      </ol>
+    </nav>
+    <h1 class="fs-2 mb-0">Import Results</h1>
+  </div>
+
+  <!-- Summary Card -->
+  <div class="card border mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Import Summary</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 bg-success bg-opacity-10 rounded text-center">
+            <div class="fs-3 fw-bold text-success"><%= @results[:success_count] %></div>
+            <div class="small text-muted">New Subscribers</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-info bg-opacity-10 rounded text-center">
+            <div class="fs-3 fw-bold text-info"><%= @results[:update_count] %></div>
+            <div class="small text-muted">Updated Subscribers</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-danger bg-opacity-10 rounded text-center">
+            <div class="fs-3 fw-bold text-danger"><%= @results[:error_count] %></div>
+            <div class="small text-muted">Errors</div>
+          </div>
+        </div>
+      </div>
+
+      <% if @results[:success_count] + @results[:update_count] > 0 %>
+        <div class="alert alert-success mt-3 mb-0">
+          <strong>Success!</strong>
+          <%= pluralize(@results[:success_count] + @results[:update_count], 'subscriber') %> processed successfully.
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Errors (if any) -->
+  <% if @results[:errors].any? %>
+    <div class="card border border-danger mb-4">
+      <div class="card-header bg-danger bg-opacity-10">
+        <h5 class="mb-0 text-danger">Errors Encountered</h5>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-3">The following rows could not be imported:</p>
+        <div class="alert alert-danger mb-0" style="max-height: 400px; overflow-y: auto;">
+          <ul class="mb-0 small">
+            <% @results[:errors].each do |error| %>
+              <li><%= error %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Actions -->
+  <div class="d-flex gap-2">
+    <%= link_to "View All Subscribers", subscribers_path, class: "btn btn-primary" %>
+    <%= link_to "Import More", import_subscribers_path, class: "btn btn-outline-secondary" %>
+    <%= link_to "Back to Dashboard", dashboard_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>

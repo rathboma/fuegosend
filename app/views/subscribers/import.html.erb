@@ -1,0 +1,68 @@
+<div class="container-fluid py-4" style="max-width: 900px;">
+  <div class="mb-4">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-2">
+        <li class="breadcrumb-item"><%= link_to "Subscribers", subscribers_path %></li>
+        <li class="breadcrumb-item active" aria-current="page">Import CSV</li>
+      </ol>
+    </nav>
+    <h1 class="fs-2 mb-0">Import Subscribers from CSV</h1>
+  </div>
+
+  <div class="card border mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">CSV Format Requirements</h5>
+      <p class="text-muted mb-3">Your CSV file must include the following:</p>
+      <ul class="mb-3">
+        <li><strong>email</strong> (required) - The subscriber's email address</li>
+        <li><strong>status</strong> (optional) - One of: active, unsubscribed, bounced, complained (defaults to active)</li>
+        <li><strong>Custom fields</strong> (optional) - Any additional columns will be imported as custom attributes (e.g., name, first_name, last_name, company, etc.)</li>
+      </ul>
+
+      <div class="alert alert-info mb-0">
+        <strong>Example CSV:</strong>
+        <pre class="mb-0 mt-2" style="font-size: 13px;">email,status,name,first_name,company
+john@example.com,active,John Doe,John,Acme Corp
+jane@example.com,active,Jane Smith,Jane,Tech Inc</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border">
+    <div class="card-body">
+      <%= form_with url: import_csv_subscribers_path, method: :post, multipart: true, local: true do |f| %>
+        <div class="mb-3">
+          <%= f.label :file, "Select CSV File *", class: "form-label" %>
+          <%= f.file_field :file, accept: ".csv", class: "form-control", required: true %>
+          <div class="form-text">Upload a CSV file with subscriber data</div>
+        </div>
+
+        <div class="mb-4">
+          <%= f.label :list_id, "Add to List (Optional)", class: "form-label" %>
+          <%= f.select :list_id,
+                       options_for_select([["Don't add to any list", ""]] + @lists.map { |l| [l.name, l.id] }),
+                       {},
+                       class: "form-select" %>
+          <div class="form-text">All imported subscribers will be automatically added to this list</div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <%= f.submit "Import Subscribers", class: "btn btn-primary", data: { disable_with: "Importing..." } %>
+          <%= link_to "Cancel", subscribers_path, class: "btn btn-outline-secondary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card border border-warning mt-4">
+    <div class="card-body">
+      <h6 class="text-warning mb-2">Important Notes:</h6>
+      <ul class="small mb-0">
+        <li>If an email already exists, the subscriber will be updated with the new data</li>
+        <li>Duplicate emails in the CSV will result in the last occurrence being used</li>
+        <li>Invalid email addresses will be skipped and reported in the results</li>
+        <li>All email addresses will be converted to lowercase</li>
+      </ul>
+    </div>
+  </div>
+</div>

@@ -133,6 +133,85 @@ class SubscribersController < ApplicationController
     redirect_to subscribers_url, notice: "Subscriber was successfully deleted."
   end
 
+  # GET /subscribers/import
+  def import
+    @lists = current_account.lists
+  end
+
+  # POST /subscribers/import_csv
+  def import_csv
+    unless params[:file].present?
+      redirect_to import_subscribers_path, alert: "Please select a CSV file to upload."
+      return
+    end
+
+    require 'csv'
+
+    file = params[:file]
+    list_id = params[:list_id]
+
+    @results = {
+      success_count: 0,
+      update_count: 0,
+      error_count: 0,
+      errors: []
+    }
+
+    begin
+      CSV.foreach(file.path, headers: true, header_converters: :symbol) do |row|
+        email = row[:email]&.strip&.downcase
+
+        unless email.present?
+          @results[:error_count] += 1
+          @results[:errors] << "Row #{row.line_number}: Missing email address"
+          next
+        end
+
+        # Find or create subscriber
+        subscriber = current_account.subscribers.find_or_initialize_by(email: email)
+        is_new = subscriber.new_record?
+
+        # Set attributes from CSV
+        subscriber.status = row[:status]&.downcase || "active"
+        subscriber.source = "csv_import"
+        subscriber.confirmed_at = Time.current if subscriber.status == "active" && subscriber.confirmed_at.nil?
+
+        # Handle custom attributes
+        custom_attrs = subscriber.custom_attributes || {}
+        row.headers.each do |header|
+          next if [:email, :status].include?(header)
+          value = row[header]
+          custom_attrs[header.to_s] = value if value.present?
+        end
+        subscriber.custom_attributes = custom_attrs
+
+        if subscriber.save
+          # Add to list if specified
+          if list_id.present?
+            list = current_account.lists.find(list_id)
+            list.add_subscriber(subscriber)
+          end
+
+          if is_new
+            @results[:success_count] += 1
+          else
+            @results[:update_count] += 1
+          end
+        else
+          @results[:error_count] += 1
+          @results[:errors] << "Row #{row.line_number} (#{email}): #{subscriber.errors.full_messages.join(', ')}"
+        end
+      end
+
+      @lists = current_account.lists
+      render :import_results
+    rescue CSV::MalformedCSVError => e
+      redirect_to import_subscribers_path, alert: "Invalid CSV file: #{e.message}"
+    rescue => e
+      redirect_to import_subscribers_path, alert: "Error processing CSV: #{e.message}"
+    end
+  end
+
   private
 
   def set_subscriber

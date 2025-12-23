@@ -6,7 +6,10 @@
         <p class="text-muted mb-0">Showing subscribers in <%= link_to @list.name, @list %></p>
       <% end %>
     </div>
-    <%= link_to "Add Subscriber", new_subscriber_path, class: "btn btn-primary" %>
+    <div class="d-flex gap-2">
+      <%= link_to "Import CSV", import_subscribers_path, class: "btn btn-outline-primary" %>
+      <%= link_to "Add Subscriber", new_subscriber_path, class: "btn btn-primary" %>
+    </div>
   </div>
 
   <!-- Filters -->

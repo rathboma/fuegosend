@@ -1,4 +1,4 @@
-<div class="container-fluid py-4" style="max-width: 900px;">
+<div class="container-fluid py-4" style="max-width: 1400px;">
   <div class="mb-4">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb mb-2">
@@ -10,9 +10,5 @@
     <h1 class="fs-2 mb-0">Edit Template</h1>
   </div>
 
-  <div class="card border">
-    <div class="card-body">
-      <%= render "form", template: @template %>
-    </div>
-  </div>
+  <%= render "form", template: @template %>
 </div>

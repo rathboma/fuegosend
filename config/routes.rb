@@ -30,7 +30,12 @@ Rails.application.routes.draw do
     get "dashboard", to: "dashboard#index"
 
     resources :lists
-    resources :subscribers
+    resources :subscribers do
+      collection do
+        get :import
+        post :import_csv
+      end
+    end
     resources :segments
     resources :campaigns do
       member do
@@ -44,7 +49,11 @@ Rails.application.routes.draw do
         get :preview
       end
     end
-    resources :templates
+    resources :templates do
+      member do
+        get :preview
+      end
+    end
     resource :account, only: [:show, :edit, :update]
   end
 

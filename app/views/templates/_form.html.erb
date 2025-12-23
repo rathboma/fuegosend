@@ -1,3 +1,14 @@
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+
 <%= form_with(model: template, local: true) do |f| %>
   <% if template.errors.any? %>
     <div class="alert alert-danger small mb-4" role="alert">
@@ -10,65 +21,102 @@
     </div>
   <% end %>
 
-  <div class="mb-3">
-    <%= f.label :name, "Template Name *", class: "form-label" %>
-    <%= f.text_field :name, class: "form-control", placeholder: "e.g. Newsletter Template", required: true %>
-  </div>
-
-  <div class="mb-3">
-    <%= f.label :description, class: "form-label" %>
-    <%= f.text_area :description, class: "form-control", rows: 2, placeholder: "Optional description of this template" %>
-  </div>
-
-  <div class="mb-4">
-    <div class="form-check form-switch">
-      <%= f.check_box :is_default, class: "form-check-input", role: "switch" %>
-      <%= f.label :is_default, "Set as default template", class: "form-check-label" %>
-    </div>
-    <small class="text-muted">The default template will be pre-selected when creating new campaigns</small>
-  </div>
-
-  <hr class="my-4">
-
-  <h5 class="mb-3">Template Content</h5>
-
-  <ul class="nav nav-tabs mb-3" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="html-tab" data-bs-toggle="tab" data-bs-target="#html-content" type="button" role="tab">HTML</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="markdown-tab" data-bs-toggle="tab" data-bs-target="#markdown-content" type="button" role="tab">Markdown</button>
-    </li>
-  </ul>
-
-  <div class="tab-content mb-3">
-    <div class="tab-pane fade show active" id="html-content" role="tabpanel">
-      <%= f.text_area :html_content, class: "form-control font-monospace", rows: 20, placeholder: "Enter HTML content..." %>
-      <small class="text-muted d-block mt-2">
-        Full HTML email template. Must include complete HTML structure.
-      </small>
-    </div>
-    <div class="tab-pane fade" id="markdown-content" role="tabpanel">
-      <%= f.text_area :markdown_content, class: "form-control font-monospace", rows: 20, placeholder: "Enter Markdown content..." %>
-      <small class="text-muted d-block mt-2">
-        Markdown will be converted to HTML when used.
-      </small>
+  <!-- Template Details (above editor) -->
+  <div class="card border mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :name, "Template Name *", class: "form-label" %>
+          <%= f.text_field :name, class: "form-control", placeholder: "e.g. Newsletter Template", required: true %>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">&nbsp;</label>
+          <div class="form-check form-switch">
+            <%= f.check_box :is_default, class: "form-check-input", role: "switch" %>
+            <%= f.label :is_default, "Set as default template", class: "form-check-label" %>
+          </div>
+        </div>
+        <div class="col-12">
+          <%= f.label :description, class: "form-label" %>
+          <%= f.text_area :description, class: "form-control", rows: 2, placeholder: "Optional description of this template" %>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="alert alert-info small mb-4">
-    <strong>Available Merge Tags:</strong>
-    <ul class="mb-0 mt-2">
-      <li><code>{{email}}</code> - Subscriber's email address</li>
-      <li><code>{{custom_attributes.name}}</code> - Custom attribute (replace 'name' with your attribute key)</li>
-      <li><code>{{campaign.name}}</code> - Campaign name</li>
-      <li><code>{{campaign.subject}}</code> - Campaign subject</li>
-      <li><code>{{unsubscribe_url}}</code> - Unsubscribe link (required)</li>
-    </ul>
+  <!-- Editor and Preview (two-column layout) -->
+  <div class="row g-4"
+       data-controller="template-editor"
+       data-template-editor-preview-url-value="<%= preview_template_path(template) %>"
+       data-template-editor-save-url-value="<%= template.persisted? ? template_path(template) : '' %>"
+       data-template-editor-csrf-token-value="<%= form_authenticity_token %>">
+
+    <!-- HTML Editor (Left) -->
+    <div class="col-md-6">
+      <div class="mb-2">
+        <strong>HTML Content</strong>
+        <small class="text-muted ms-2">Full email template with Mustache tags</small>
+      </div>
+      <div class="card border">
+        <div class="card-body p-0">
+          <%= f.text_area :html_content, class: "d-none", data: { template_editor_target: "hiddenField" } %>
+          <textarea data-template-editor-target="textarea" style="display: none;"><%= template.html_content %></textarea>
+        </div>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">
+          <strong>Merge Tags:</strong>
+          <code>{{{content}}}</code>,
+          <code>{{email}}</code>,
+          <code>{{name}}</code>,
+          <code>{{custom_first_name}}</code>,
+          <code>{{logo_url}}</code>,
+          <code>{{unsubscribe_url}}</code>,
+          <code>{{current_year}}</code>
+        </small>
+      </div>
+    </div>
+
+    <!-- Preview (Right) -->
+    <div class="col-md-6">
+      <div class="mb-2">
+        <strong>Preview</strong>
+        <small class="text-muted ms-2">How the template looks with sample content</small>
+      </div>
+      <div class="card border">
+        <div class="card-body p-0">
+          <iframe
+            data-template-editor-target="preview"
+            style="width: 100%; height: 600px; border: none; display: block;"
+            sandbox="allow-same-origin"
+            title="Template Preview">
+          </iframe>
+        </div>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">
+          Preview updates automatically as you type
+          <span class="text-success d-none" data-template-editor-target="saveStatus">✓ Saved</span>
+        </small>
+      </div>
+    </div>
   </div>
 
-  <div class="d-flex gap-2">
+  <!-- Actions -->
+  <div class="d-flex gap-2 mt-4">
     <%= f.submit template.new_record? ? "Create Template" : "Update Template", class: "btn btn-primary" %>
     <%= link_to "Cancel", template.new_record? ? templates_path : template, class: "btn btn-outline-secondary" %>
   </div>
 <% end %>
+
+<style>
+.CodeMirror {
+  border: 1px solid #dee2e6;
+  font-size: 14px;
+  height: 600px;
+}
+
+.CodeMirror-scroll {
+  min-height: 600px;
+}
+</style>
