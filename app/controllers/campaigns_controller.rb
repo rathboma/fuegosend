@@ -76,7 +76,13 @@ class CampaignsController < ApplicationController
     @step = params.dig(:campaign, :step)&.to_i || params[:step]&.to_i || 1
 
     if @campaign.update(campaign_params)
-      # Navigate through steps
+      # Handle AJAX autosave requests (don't redirect)
+      if request.xhr? || request.format.json?
+        head :ok
+        return
+      end
+
+      # Navigate through steps for form submissions
       if @step == 1
         redirect_to edit_campaign_path(@campaign, step: 2), notice: "Campaign details saved. Now add your email content."
       elsif @step == 2
@@ -85,7 +91,11 @@ class CampaignsController < ApplicationController
         redirect_to @campaign, notice: "Campaign was successfully updated."
       end
     else
-      render :edit, status: :unprocessable_entity
+      if request.xhr? || request.format.json?
+        render json: { errors: @campaign.errors.full_messages }, status: :unprocessable_entity
+      else
+        render :edit, status: :unprocessable_entity
+      end
     end
   end
 

@@ -17,7 +17,9 @@
 
 <div class="row g-4"
      data-controller="markdown-editor"
-     data-markdown-editor-preview-url-value="<%= preview_campaign_path(campaign) %>">
+     data-markdown-editor-preview-url-value="<%= preview_campaign_path(campaign) %>"
+     data-markdown-editor-save-url-value="<%= campaign.persisted? ? campaign_path(campaign) : '' %>"
+     data-markdown-editor-csrf-token-value="<%= form_authenticity_token %>">
   <!-- Markdown Editor (Left) -->
   <div class="col-md-6">
     <div class="mb-2">
@@ -60,7 +62,10 @@
       </div>
     </div>
     <div class="mt-2">
-      <small class="text-muted">Preview updates automatically as you type (debounced 500ms)</small>
+      <small class="text-muted">
+        Preview updates automatically as you type
+        <span class="text-success d-none" data-markdown-editor-target="saveStatus">✓ Saved</span>
+      </small>
     </div>
   </div>
 </div>

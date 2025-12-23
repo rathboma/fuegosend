@@ -1,13 +1,17 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["textarea", "hiddenField", "preview"]
+  static targets = ["textarea", "hiddenField", "preview", "saveStatus"]
   static values = {
-    previewUrl: String
+    previewUrl: String,
+    saveUrl: String,
+    csrfToken: String
   }
 
   connect() {
     this.debounceTimer = null
+    this.maxWaitTimer = null
+    this.lastUpdateTime = Date.now()
     this.waitForCodeMirror().then(() => {
       this.initializeEditor()
     })
@@ -20,6 +24,9 @@ export default class extends Controller {
     }
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer)
+    }
+    if (this.maxWaitTimer) {
+      clearTimeout(this.maxWaitTimer)
     }
   }
 
@@ -84,18 +91,103 @@ export default class extends Controller {
   }
 
   debouncedUpdatePreview() {
-    // Clear existing timer
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer)
-    }
+    const DEBOUNCE_DELAY = 500  // Wait 500ms after typing stops
+    const MAX_WAIT = 2000        // Force update after 2s of continuous typing
 
     // Sync to hidden field immediately
     this.syncToHiddenField()
 
-    // Set new timer to update preview after 500ms of no typing
+    // Check if we've been waiting too long since last update
+    const timeSinceLastUpdate = Date.now() - this.lastUpdateTime
+    if (timeSinceLastUpdate >= MAX_WAIT) {
+      // Force update now
+      this.clearTimers()
+      this.updatePreviewAndResetTimers()
+      return
+    }
+
+    // Clear existing debounce timer
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
+
+    // Set up max wait timer if not already running
+    if (!this.maxWaitTimer) {
+      const remainingWait = MAX_WAIT - timeSinceLastUpdate
+      this.maxWaitTimer = setTimeout(() => {
+        this.updatePreviewAndResetTimers()
+      }, remainingWait)
+    }
+
+    // Set new debounce timer
     this.debounceTimer = setTimeout(() => {
+      this.updatePreviewAndResetTimers()
+    }, DEBOUNCE_DELAY)
+  }
+
+  clearTimers() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+      this.debounceTimer = null
+    }
+    if (this.maxWaitTimer) {
+      clearTimeout(this.maxWaitTimer)
+      this.maxWaitTimer = null
+    }
+  }
+
+  async updatePreviewAndResetTimers() {
+    this.clearTimers()
+    this.lastUpdateTime = Date.now()
+
+    // Save content and update preview in parallel
+    await Promise.all([
+      this.saveContent(),
       this.updatePreview()
-    }, 500)
+    ])
+  }
+
+  async saveContent() {
+    if (!this.hasSaveUrlValue || !this.hasCsrfTokenValue) {
+      return // No save URL configured, skip saving
+    }
+
+    const markdown = this.editor.getValue()
+
+    try {
+      const response = await fetch(this.saveUrlValue, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRF-Token': this.csrfTokenValue,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+          'campaign[body_markdown]': markdown,
+          'campaign[step]': '2'
+        })
+      })
+
+      if (response.ok) {
+        this.showSaveStatus()
+      } else {
+        console.warn('Failed to save content:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Failed to save content:', error)
+    }
+  }
+
+  showSaveStatus() {
+    if (!this.hasSaveStatusTarget) return
+
+    // Show the "Saved" indicator
+    this.saveStatusTarget.classList.remove('d-none')
+
+    // Hide it after 2 seconds
+    setTimeout(() => {
+      this.saveStatusTarget.classList.add('d-none')
+    }, 2000)
   }
 
   async updatePreview() {
