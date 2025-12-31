@@ -2,41 +2,31 @@ class SetupController < ApplicationController
   before_action :authenticate_user!
   before_action :redirect_if_setup_complete
 
-  # GET /setup or /setup?step=1
+  # GET /setup
   def show
     @account = current_account
-    @step = params[:step]&.to_i || 1
+    @step = @account.current_setup_step || 1
+
+    # If setup is complete, redirect to dashboard
+    redirect_to dashboard_path if @step.nil?
   end
 
-  # POST /setup
-  def update
+  # POST /setup/account_details
+  def account_details
     @account = current_account
-    @step = params[:step]&.to_i || 1
 
-    case @step
-    when 1
-      update_step_1
-    when 2
-      update_step_2
-    when 3
-      update_step_3
-    else
-      redirect_to setup_path(step: 1)
-    end
-  end
-
-  private
-
-  def update_step_1
     if @account.update(step_1_params)
-      redirect_to setup_path(step: 2), notice: "Account details saved. Now let's configure AWS SES."
+      @account.update(setup_step: :account_details)
+      redirect_to setup_path, notice: "Account details saved. Now let's configure AWS SES."
     else
       @step = 1
       render :show, status: :unprocessable_entity
     end
   end
 
-  def update_step_2
+  # POST /setup/aws_credentials
+  def aws_credentials
+    @account = current_account
     @account.assign_attributes(step_2_params)
 
     if @account.save
@@ -45,9 +35,10 @@ class SetupController < ApplicationController
       result = quota_checker.test_connection
 
       if result[:success]
-        # Refresh quota immediately
+        # Refresh quota and advance to next step
         @account.refresh_ses_quota!
-        redirect_to setup_path(step: 3), notice: "SES credentials verified! Now let's add your logo."
+        @account.update(setup_step: :aws_credentials)
+        redirect_to setup_path, notice: "SES credentials verified! Now let's add your logo."
       else
         @account.errors.add(:base, "SES connection failed: #{result[:error]}")
         @step = 2
@@ -59,22 +50,29 @@ class SetupController < ApplicationController
     end
   end
 
-  def update_step_3
+  # POST /setup/logo
+  def logo
+    @account = current_account
+
     # Attach logo if provided
     if params[:account] && params[:account][:logo].present?
       @account.logo.attach(params[:account][:logo])
     end
 
     # Mark setup as complete
-    @account.setup_completed = true
+    @account.update(setup_step: :complete)
 
-    if @account.save
-      redirect_to dashboard_path, notice: "Setup complete! Welcome to Fuegomail."
-    else
-      @step = 3
-      render :show, status: :unprocessable_entity
-    end
+    redirect_to dashboard_path, notice: "Setup complete! Welcome to Fuegomail."
   end
+
+  # POST /setup/skip_logo
+  def skip_logo
+    @account = current_account
+    @account.update(setup_step: :complete)
+    redirect_to dashboard_path, notice: "Setup complete! You can add your logo later in Account Settings."
+  end
+
+  private
 
   def step_1_params
     params.require(:account).permit(:name, :subdomain)

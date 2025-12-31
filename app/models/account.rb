@@ -18,13 +18,29 @@ class Account < ApplicationRecord
   encrypts :aws_access_key_id
   encrypts :aws_secret_access_key
 
+  # Setup progress tracking
+  enum setup_step: {
+    pending: 0,
+    account_details: 1,
+    aws_credentials: 2,
+    complete: 3
+  }
+
   validates :name, presence: true
   validates :subdomain, presence: true, uniqueness: true,
             format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
 
   # Check if setup is complete
   def setup_complete?
-    setup_completed && name.present? && subdomain.present? && aws_credentials_configured?
+    complete?
+  end
+
+  # Determine which step user should see
+  def current_setup_step
+    return 1 if pending?
+    return 2 if account_details?
+    return 3 if aws_credentials?
+    nil # Setup complete, no step to show
   end
 
   def aws_credentials_configured?

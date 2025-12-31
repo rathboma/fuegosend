@@ -31,7 +31,10 @@ Rails.application.routes.draw do
 
     # Account setup wizard
     get "setup", to: "setup#show"
-    post "setup", to: "setup#update"
+    post "setup/account_details", to: "setup#account_details", as: :setup_account_details
+    post "setup/aws_credentials", to: "setup#aws_credentials", as: :setup_aws_credentials
+    post "setup/logo", to: "setup#logo", as: :setup_logo
+    post "setup/skip_logo", to: "setup#skip_logo", as: :setup_skip_logo
 
     resources :lists
     resources :subscribers do
