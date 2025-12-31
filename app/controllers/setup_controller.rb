@@ -27,9 +27,17 @@ class SetupController < ApplicationController
   # POST /setup/aws_credentials
   def aws_credentials
     @account = current_account
+
+    # Clean up credentials (strip whitespace)
+    params[:account][:aws_access_key_id] = params[:account][:aws_access_key_id]&.strip
+    params[:account][:aws_secret_access_key] = params[:account][:aws_secret_access_key]&.strip
+
     @account.assign_attributes(step_2_params)
 
     if @account.save
+      # Reload to ensure encrypted values are properly decrypted
+      @account.reload
+
       # Test SES connection
       quota_checker = Ses::QuotaChecker.new(@account)
       result = quota_checker.test_connection
@@ -40,7 +48,20 @@ class SetupController < ApplicationController
         @account.setup_step_aws_credentials!
         redirect_to setup_path, notice: "SES credentials verified! Now let's add your logo."
       else
-        @account.errors.add(:base, "SES connection failed: #{result[:error]}")
+        # Provide detailed error message
+        error_message = result[:error].to_s
+
+        Rails.logger.error "SES connection test failed: #{error_message}"
+        Rails.logger.error "Access Key (first 10 chars): #{@account.aws_access_key_id&.first(10)}"
+        Rails.logger.error "Region: #{@account.aws_region}"
+
+        if error_message.include?("security token") || error_message.include?("invalid")
+          @account.errors.add(:base, "AWS credentials are invalid. Common issues: incorrect Access Key ID, incorrect Secret Access Key, or credentials copied with extra whitespace. Full error: #{error_message}")
+        elsif error_message.include?("not authorized") || error_message.include?("AccessDenied")
+          @account.errors.add(:base, "AWS credentials don't have permission to access SES. Please verify the IAM permissions listed below. Full error: #{error_message}")
+        else
+          @account.errors.add(:base, "SES connection failed: #{error_message}")
+        end
         @step = 2
         render :show, status: :unprocessable_entity
       end
