@@ -16,7 +16,7 @@ class SetupController < ApplicationController
     @account = current_account
 
     if @account.update(step_1_params)
-      @account.update(setup_step: :account_details)
+      @account.setup_step_account_details!
       redirect_to setup_path, notice: "Account details saved. Now let's configure AWS SES."
     else
       @step = 1
@@ -37,7 +37,7 @@ class SetupController < ApplicationController
       if result[:success]
         # Refresh quota and advance to next step
         @account.refresh_ses_quota!
-        @account.update(setup_step: :aws_credentials)
+        @account.setup_step_aws_credentials!
         redirect_to setup_path, notice: "SES credentials verified! Now let's add your logo."
       else
         @account.errors.add(:base, "SES connection failed: #{result[:error]}")
@@ -60,7 +60,7 @@ class SetupController < ApplicationController
     end
 
     # Mark setup as complete
-    @account.update(setup_step: :complete)
+    @account.setup_step_complete!
 
     redirect_to dashboard_path, notice: "Setup complete! Welcome to Fuegomail."
   end
@@ -68,7 +68,7 @@ class SetupController < ApplicationController
   # POST /setup/skip_logo
   def skip_logo
     @account = current_account
-    @account.update(setup_step: :complete)
+    @account.setup_step_complete!
     redirect_to dashboard_path, notice: "Setup complete! You can add your logo later in Account Settings."
   end
 

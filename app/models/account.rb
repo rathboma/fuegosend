@@ -19,12 +19,12 @@ class Account < ApplicationRecord
   encrypts :aws_secret_access_key
 
   # Setup progress tracking
-  enum setup_step: {
-    pending: 0,
+  enum :setup_step, {
+    not_started: 0,
     account_details: 1,
     aws_credentials: 2,
     complete: 3
-  }
+  }, prefix: true
 
   validates :name, presence: true
   validates :subdomain, presence: true, uniqueness: true,
@@ -32,14 +32,14 @@ class Account < ApplicationRecord
 
   # Check if setup is complete
   def setup_complete?
-    complete?
+    setup_step_complete?
   end
 
   # Determine which step user should see
   def current_setup_step
-    return 1 if pending?
-    return 2 if account_details?
-    return 3 if aws_credentials?
+    return 1 if setup_step_not_started?
+    return 2 if setup_step_account_details?
+    return 3 if setup_step_aws_credentials?
     nil # Setup complete, no step to show
   end
 
