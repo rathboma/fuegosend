@@ -17,6 +17,9 @@ Rails.application.routes.draw do
   get "t/o/:token", to: "tracking#open", as: :track_open
   get "t/c/:token", to: "tracking#click", as: :track_click
 
+  # Image short URLs
+  get "i/:slug", to: "images#show", as: :short_image
+
   # Subscriptions - Unsubscribe and subscription forms
   get "unsubscribe/:token", to: "subscriptions#unsubscribe", as: :unsubscribe
   post "unsubscribe/:token", to: "subscriptions#unsubscribe_confirm", as: :unsubscribe_confirm
@@ -54,6 +57,9 @@ Rails.application.routes.draw do
         post :send_test
         get :stats
         get :preview
+      end
+      collection do
+        get :search_subscribers
       end
     end
     resources :templates do

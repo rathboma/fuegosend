@@ -21,14 +21,15 @@
   </div>
   <div class="col-md-6">
     <%= f.label :from_email, "From Email *", class: "form-label" %>
-    <%= f.email_field :from_email, class: "form-control", placeholder: "e.g. sender@example.com", required: true %>
-    <small class="text-muted">Must be verified in AWS SES</small>
+    <%= f.email_field :from_email, class: "form-control", placeholder: current_account.default_from_email, required: true %>
+    <small class="text-muted">Must be verified in AWS SES. Defaults to account setting.</small>
   </div>
 </div>
 
 <div class="mb-3">
   <%= f.label :reply_to_email, "Reply-To Email", class: "form-label" %>
-  <%= f.email_field :reply_to_email, class: "form-control", placeholder: "Optional: where replies should go" %>
+  <%= f.email_field :reply_to_email, class: "form-control", placeholder: current_account.default_reply_to_email || "Optional: where replies should go" %>
+  <small class="text-muted">Defaults to account setting if left blank</small>
 </div>
 
 <hr class="my-4">

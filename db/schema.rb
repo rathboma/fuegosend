@@ -10,14 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_31_153932) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_31_174511) do
   create_table "accounts", force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.string "aws_access_key_id"
     t.string "aws_region", default: "us-east-1"
+    t.string "aws_secret_access_key"
     t.string "brand_logo"
     t.datetime "created_at", null: false
-    t.string "encrypted_aws_access_key_id"
-    t.string "encrypted_aws_secret_access_key"
+    t.string "default_from_email"
+    t.string "default_reply_to_email"
     t.string "name", null: false
     t.datetime "paused_at"
     t.integer "ses_max_24_hour_send", default: 200
@@ -178,8 +180,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_31_153932) do
   create_table "images", force: :cascade do |t|
     t.integer "account_id", null: false
     t.datetime "created_at", null: false
+    t.string "slug"
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_images_on_account_id"
+    t.index ["slug"], name: "index_images_on_slug", unique: true
   end
 
   create_table "list_subscriptions", force: :cascade do |t|

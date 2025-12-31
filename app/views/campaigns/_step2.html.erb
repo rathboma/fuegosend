@@ -1,6 +1,6 @@
 <!-- CodeMirror CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
 
 <!-- CodeMirror JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
@@ -20,7 +20,8 @@
      data-markdown-editor-preview-url-value="<%= preview_campaign_path(campaign) %>"
      data-markdown-editor-save-url-value="<%= campaign.persisted? ? campaign_path(campaign) : '' %>"
      data-markdown-editor-upload-url-value="<%= images_path %>"
-     data-markdown-editor-csrf-token-value="<%= form_authenticity_token %>">
+     data-markdown-editor-csrf-token-value="<%= form_authenticity_token %>"
+     data-markdown-editor-initial-subscriber-id-value="<%= session[:preview_subscriber_id] || campaign.list&.subscribers&.first&.id %>">
   <!-- Markdown Editor (Left) -->
   <div class="col-md-6">
     <div class="mb-2 d-flex justify-content-between align-items-center">
@@ -31,7 +32,7 @@
     </div>
 
     <!-- Toolbar -->
-    <div class="btn-toolbar mb-2 p-2 bg-light border rounded" role="toolbar">
+    <div class="btn-toolbar mb-2 p-2 bg-light border rounded" role="toolbar" data-markdown-editor-target="toolbar">
       <div class="btn-group btn-group-sm me-2" role="group">
         <button type="button" class="btn btn-outline-secondary" data-action="click->markdown-editor#bold" title="Bold">
           <strong>B</strong>
@@ -59,6 +60,60 @@
           📷
         </button>
       </div>
+      <div class="dropdown d-inline-block me-2">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Insert Merge Tag
+        </button>
+        <ul class="dropdown-menu" style="max-height: 400px; overflow-y: auto;">
+          <li><h6 class="dropdown-header">Subscriber Fields</h6></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{email}}">
+            <code>{{email}}</code> - Email address
+          </a></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{name}}">
+            <code>{{name}}</code> - Full name
+          </a></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{first_name}}">
+            <code>{{first_name}}</code> - First name
+          </a></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{last_name}}">
+            <code>{{last_name}}</code> - Last name
+          </a></li>
+          <% if @custom_fields.any? %>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header">Custom Fields</h6></li>
+            <% @custom_fields.each do |field| %>
+              <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{custom_<%= field.name %>}}">
+                <code>{{custom_<%= field.name %>}}</code> - <%= field.name.titleize %>
+              </a></li>
+            <% end %>
+          <% end %>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">Campaign & Account</h6></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{campaign_name}}">
+            <code>{{campaign_name}}</code> - Campaign name
+          </a></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{account_name}}">
+            <code>{{account_name}}</code> - Your organization name
+          </a></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{logo_url}}">
+            <code>{{logo_url}}</code> - Logo URL
+          </a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">Links & Other</h6></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{unsubscribe_url}}">
+            <code>{{unsubscribe_url}}</code> - Unsubscribe link
+          </a></li>
+          <li><a class="dropdown-item" href="#" data-action="click->markdown-editor#insertMergeTag" data-tag="{{current_year}}">
+            <code>{{current_year}}</code> - Current year
+          </a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a class="dropdown-item text-primary" href="#" data-bs-toggle="modal" data-bs-target="#mergeTagsModal">
+              📖 View all merge tags
+            </a>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <!-- Hidden file input for image uploads -->
@@ -68,36 +123,46 @@
            data-action="change->markdown-editor#handleImageUpload"
            style="display: none;">
 
-    <div class="card border">
+    <div class="card border" data-markdown-editor-target="editorCard">
       <div class="card-body p-0">
         <%= f.text_area :body_markdown, class: "d-none", data: { markdown_editor_target: "hiddenField" } %>
         <textarea data-markdown-editor-target="textarea" style="display: none;"><%= campaign.body_markdown %></textarea>
       </div>
     </div>
-    <div class="mt-2">
-      <small class="text-muted">
-        <strong>Merge Tags:</strong>
-        <code>{{email}}</code>,
-        <code>{{name}}</code>,
-        <code>{{custom_first_name}}</code>,
-        <code>{{custom_company}}</code>,
-        <code>{{logo_url}}</code>,
-        <code>{{unsubscribe_url}}</code>
-      </small>
-    </div>
   </div>
 
   <!-- Preview (Right) -->
   <div class="col-md-6">
-    <div class="mb-2">
-      <strong>Preview</strong>
-      <small class="text-muted ms-2">How it will look to subscribers</small>
+    <div class="mb-2 d-flex justify-content-between align-items-center">
+      <div>
+        <strong>Preview</strong>
+        <small class="text-muted ms-2">How it will look to subscribers</small>
+      </div>
+      <div>
+        <small class="text-muted" data-markdown-editor-target="selectedSubscriber">
+          <%
+            selected_subscriber = nil
+            if session[:preview_subscriber_id].present?
+              selected_subscriber = current_account.subscribers.find_by(id: session[:preview_subscriber_id])
+            end
+            selected_subscriber ||= @campaign.list&.subscribers&.first
+          %>
+          <% if selected_subscriber %>
+            Preview with: <%= selected_subscriber.email %>
+          <% else %>
+            Using sample data
+          <% end %>
+        </small>
+        <a href="#" class="ms-2 small" data-bs-toggle="modal" data-bs-target="#subscriberSelectModal">
+          (change)
+        </a>
+      </div>
     </div>
     <div class="card border">
       <div class="card-body p-0">
         <iframe
           data-markdown-editor-target="preview"
-          style="width: 100%; height: 600px; border: none; display: block;"
+          style="width: 100%; border: none; display: block;"
           sandbox="allow-same-origin"
           title="Email Preview">
         </iframe>
@@ -117,6 +182,169 @@
 <div class="d-flex gap-2 mt-4">
   <%= link_to "← Back to Details", campaign.persisted? ? edit_campaign_path(campaign, step: 1) : new_campaign_path(step: 1), class: "btn btn-outline-secondary" %>
   <%= f.submit "Continue to Review →", class: "btn btn-primary" %>
+</div>
+
+<!-- Subscriber Selection Modal -->
+<div class="modal fade" id="subscriberSelectModal" tabindex="-1" aria-labelledby="subscriberSelectModalLabel" aria-hidden="true"
+     data-controller="markdown-editor"
+     data-markdown-editor-preview-url-value="<%= preview_campaign_path(campaign) %>"
+     data-markdown-editor-csrf-token-value="<%= form_authenticity_token %>"
+     data-markdown-editor-initial-subscriber-id-value="<%= session[:preview_subscriber_id] || campaign.list&.subscribers&.first&.id %>">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="subscriberSelectModalLabel">Select Preview Subscriber</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Search for a subscriber to preview merge tags with their data.</p>
+        <div class="mb-3">
+          <input type="text"
+                 class="form-control"
+                 placeholder="Search by email..."
+                 data-markdown-editor-target="subscriberSearch"
+                 data-action="input->markdown-editor#searchSubscribers keydown->markdown-editor#handleSearchKeydown"
+                 autocomplete="off">
+        </div>
+        <div class="list-group" data-markdown-editor-target="subscriberResults" style="max-height: 400px; overflow-y: auto;">
+          <div class="text-muted text-center py-3">
+            Type to search for subscribers
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Merge Tags Reference Modal -->
+<div class="modal fade" id="mergeTagsModal" tabindex="-1" aria-labelledby="mergeTagsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mergeTagsModalLabel">Available Merge Tags</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">Use these merge tags in your email content to personalize messages for each subscriber.</p>
+
+        <h6 class="mt-3">Subscriber Fields</h6>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>{{email}}</code></td>
+              <td>Subscriber's email address</td>
+            </tr>
+            <tr>
+              <td><code>{{name}}</code></td>
+              <td>Full name from custom attributes</td>
+            </tr>
+            <tr>
+              <td><code>{{first_name}}</code></td>
+              <td>First name from custom attributes</td>
+            </tr>
+            <tr>
+              <td><code>{{last_name}}</code></td>
+              <td>Last name from custom attributes</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <% if @custom_fields.any? %>
+          <h6 class="mt-4">Custom Fields</h6>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @custom_fields.each do |field| %>
+                <tr>
+                  <td><code>{{custom_<%= field.name %>}}</code></td>
+                  <td><%= field.name.titleize %> (<%= field.field_type %>)</td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        <% end %>
+
+        <h6 class="mt-4">Campaign & Account</h6>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>{{campaign_name}}</code></td>
+              <td>Name of this campaign</td>
+            </tr>
+            <tr>
+              <td><code>{{campaign_subject}}</code></td>
+              <td>Email subject line</td>
+            </tr>
+            <tr>
+              <td><code>{{campaign_from_name}}</code></td>
+              <td>Sender name</td>
+            </tr>
+            <tr>
+              <td><code>{{campaign_from_email}}</code></td>
+              <td>Sender email address</td>
+            </tr>
+            <tr>
+              <td><code>{{account_name}}</code></td>
+              <td>Your organization's name</td>
+            </tr>
+            <tr>
+              <td><code>{{logo_url}}</code></td>
+              <td>URL to your logo image</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h6 class="mt-4">Links & Other</h6>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>{{unsubscribe_url}}</code></td>
+              <td>Link for subscribers to unsubscribe</td>
+            </tr>
+            <tr>
+              <td><code>{{current_year}}</code></td>
+              <td>Current year (e.g., 2025)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="alert alert-info mt-4">
+          <strong>Example:</strong>
+          <pre class="mb-0 mt-2">Hi {{first_name}},
+
+Thanks for being a valued customer at {{custom_company}}!
+
+[Unsubscribe]({{unsubscribe_url}})</pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>

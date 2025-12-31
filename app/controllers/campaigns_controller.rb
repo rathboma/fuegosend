@@ -33,6 +33,7 @@ class CampaignsController < ApplicationController
     @campaign = current_account.campaigns.new
     @lists = current_account.lists
     @templates = current_account.templates
+    @custom_fields = current_account.custom_field_definitions.order(:name)
     @step = params[:step]&.to_i || 1
   end
 
@@ -41,6 +42,7 @@ class CampaignsController < ApplicationController
     @campaign = current_account.campaigns.new(campaign_params)
     @lists = current_account.lists
     @templates = current_account.templates
+    @custom_fields = current_account.custom_field_definitions.order(:name)
     @step = params.dig(:campaign, :step)&.to_i || params[:step]&.to_i || 1
 
     if @campaign.save
@@ -61,6 +63,7 @@ class CampaignsController < ApplicationController
 
     @lists = current_account.lists
     @templates = current_account.templates
+    @custom_fields = current_account.custom_field_definitions.order(:name)
     @step = params[:step]&.to_i || 1
   end
 
@@ -73,6 +76,7 @@ class CampaignsController < ApplicationController
 
     @lists = current_account.lists
     @templates = current_account.templates
+    @custom_fields = current_account.custom_field_definitions.order(:name)
     @step = params.dig(:campaign, :step)&.to_i || params[:step]&.to_i || 1
 
     if @campaign.update(campaign_params)
@@ -188,9 +192,20 @@ class CampaignsController < ApplicationController
   def preview
     markdown_content = params[:content] || @campaign.body_markdown || ""
 
+    # Store selected subscriber in session if provided
+    if params[:subscriber_id].present?
+      session[:preview_subscriber_id] = params[:subscriber_id]
+    end
+
     begin
-      # Create a sample subscriber for merge tags
-      sample_subscriber = if @campaign.list
+      # Get subscriber for merge tags (from session, param, or create sample)
+      sample_subscriber = nil
+
+      if session[:preview_subscriber_id].present?
+        sample_subscriber = current_account.subscribers.find_by(id: session[:preview_subscriber_id])
+      end
+
+      sample_subscriber ||= if @campaign.list
         @campaign.list.subscribers.first || Subscriber.new(
           email: 'subscriber@example.com',
           custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
@@ -204,20 +219,51 @@ class CampaignsController < ApplicationController
 
       # Render the preview
       if @campaign.template
-        # Convert markdown to HTML
-        campaign_html = Kramdown::Document.new(markdown_content).to_html
-
         # Create a temporary campaign object with the preview content
         preview_campaign = @campaign.dup
         preview_campaign.define_singleton_method(:body_markdown) { markdown_content }
 
-        # Render through template
-        html = @campaign.template.render_for(sample_subscriber, preview_campaign)
+        # Process merge tags in campaign content
+        campaign_html = Mustache.render(
+          Kramdown::Document.new(markdown_content).to_html,
+          preview_campaign.send(:build_mustache_data, sample_subscriber)
+        )
 
+        # Build data for template with processed campaign content
+        data = {
+          content: campaign_html,
+          body: campaign_html,
+          email_content: campaign_html,
+          email: sample_subscriber.email,
+          subscriber_email: sample_subscriber.email,
+          name: sample_subscriber.get_attribute("name"),
+          first_name: sample_subscriber.get_attribute("first_name"),
+          last_name: sample_subscriber.get_attribute("last_name"),
+          campaign_name: preview_campaign.name,
+          campaign_subject: preview_campaign.subject,
+          campaign_from_name: preview_campaign.from_name,
+          campaign_from_email: preview_campaign.from_email,
+          account_name: current_account.name,
+          logo_url: current_account.logo_url,
+          unsubscribe_url: "#unsubscribe",
+          current_year: Time.current.year
+        }
+
+        # Add custom attributes
+        if sample_subscriber.custom_attributes.is_a?(Hash)
+          sample_subscriber.custom_attributes.each do |key, value|
+            data["custom_#{key}".to_sym] = value
+          end
+        end
+
+        # Render template with data
+        html = Mustache.render(@campaign.template.rendered_html, data)
         render html: html.html_safe, layout: false
       else
-        # No template, just render markdown as HTML
+        # No template, process merge tags and render markdown
+        data = @campaign.send(:build_mustache_data, sample_subscriber)
         html = Kramdown::Document.new(markdown_content).to_html
+        html = Mustache.render(html, data)
         render html: html.html_safe, layout: false
       end
     rescue => e
@@ -272,6 +318,35 @@ class CampaignsController < ApplicationController
     @link_clicks = @campaign.campaign_links.order(click_count: :desc).limit(10)
   end
 
+  # GET /campaigns/search_subscribers
+  def search_subscribers
+    query = params[:q]&.strip
+
+    if query.blank?
+      render json: []
+      return
+    end
+
+    # Search subscribers by email or custom attributes
+    subscribers = current_account.subscribers
+                                 .where("email LIKE ?", "%#{query}%")
+                                 .limit(10)
+
+    results = subscribers.map do |subscriber|
+      display_name = subscriber.custom_attributes&.dig('name') || subscriber.custom_attributes&.dig('first_name')
+      display_name = "#{display_name} (#{subscriber.email})" if display_name
+      display_name ||= subscriber.email
+
+      {
+        id: subscriber.id,
+        email: subscriber.email,
+        display: display_name
+      }
+    end
+
+    render json: results
+  end
+
   private
 
   def set_campaign
@@ -288,7 +363,8 @@ class CampaignsController < ApplicationController
       :list_id,
       :segment_id,
       :template_id,
-      :body_markdown
+      :body_markdown,
+      :step
     )
   end
 

@@ -11,6 +11,9 @@ class Campaign < ApplicationRecord
   validates :name, :subject, :from_name, :from_email, presence: true
   validates :status, inclusion: { in: %w[draft scheduled sending sent paused cancelled] }
 
+  # Set default email values from account
+  after_initialize :set_default_emails, if: :new_record?
+
   # Scopes
   scope :draft, -> { where(status: "draft") }
   scope :scheduled, -> { where(status: "scheduled") }
@@ -257,5 +260,11 @@ class Campaign < ApplicationRecord
 
   def notify_quota_exceeded!
     # CampaignMailer.quota_exceeded(self, user).deliver_later
+  end
+
+  def set_default_emails
+    return unless account.present?
+    self.from_email ||= account.default_from_email
+    self.reply_to_email ||= account.default_reply_to_email
   end
 end

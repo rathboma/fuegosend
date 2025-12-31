@@ -1,5 +1,11 @@
 class ImagesController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, only: [:create]
+
+  # GET /i/:slug
+  def show
+    @image = Image.find_by!(slug: params[:slug])
+    redirect_to rails_blob_url(@image.file, disposition: "inline"), allow_other_host: false
+  end
 
   # POST /images
   def create

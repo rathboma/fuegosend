@@ -38,6 +38,14 @@ class SetupController < ApplicationController
       # Reload to ensure encrypted values are properly decrypted
       @account.reload
 
+      # Debug: Check if credentials are available
+      Rails.logger.info "=== SES Credential Debug ==="
+      Rails.logger.info "Access Key ID present: #{@account.aws_access_key_id.present?}"
+      Rails.logger.info "Access Key ID (first 10): #{@account.aws_access_key_id&.first(10)}"
+      Rails.logger.info "Secret Key present: #{@account.aws_secret_access_key.present?}"
+      Rails.logger.info "Secret Key (first 10): #{@account.aws_secret_access_key&.first(10)}"
+      Rails.logger.info "Region: #{@account.aws_region}"
+
       # Test SES connection
       quota_checker = Ses::QuotaChecker.new(@account)
       result = quota_checker.test_connection
@@ -96,7 +104,7 @@ class SetupController < ApplicationController
   private
 
   def step_1_params
-    params.require(:account).permit(:name, :subdomain)
+    params.require(:account).permit(:name, :subdomain, :default_from_email, :default_reply_to_email)
   end
 
   def step_2_params

@@ -1,24 +1,31 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["textarea", "hiddenField", "preview", "saveStatus", "toolbar", "imageUpload"]
+  static targets = ["textarea", "hiddenField", "preview", "saveStatus", "toolbar", "imageUpload", "editorCard", "subscriberSearch", "subscriberResults", "selectedSubscriber"]
   static values = {
     previewUrl: String,
     saveUrl: String,
     csrfToken: String,
-    uploadUrl: String
+    uploadUrl: String,
+    initialSubscriberId: String
   }
 
   connect() {
     this.debounceTimer = null
     this.maxWaitTimer = null
     this.lastUpdateTime = Date.now()
+    this.selectedSubscriberId = this.initialSubscriberIdValue || null
+    this.searchDebounce = null
     this.waitForCodeMirror().then(() => {
       this.initializeEditor()
+      this.updatePreviewHeight()
     })
+    // Update preview height on window resize
+    window.addEventListener('resize', () => this.updatePreviewHeight())
   }
 
   disconnect() {
+    window.removeEventListener('resize', () => this.updatePreviewHeight())
     if (this.editor) {
       this.editor.toTextArea()
       this.editor = null
@@ -28,6 +35,9 @@ export default class extends Controller {
     }
     if (this.maxWaitTimer) {
       clearTimeout(this.maxWaitTimer)
+    }
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce)
     }
   }
 
@@ -60,7 +70,7 @@ export default class extends Controller {
     // Initialize CodeMirror
     this.editor = CodeMirror.fromTextArea(this.textareaTarget, {
       mode: 'markdown',
-      theme: 'monokai',
+      theme: 'eclipse',
       lineNumbers: true,
       lineWrapping: true,
       viewportMargin: Infinity
@@ -199,6 +209,11 @@ export default class extends Controller {
       const url = new URL(this.previewUrlValue, window.location.origin)
       url.searchParams.set('content', markdown)
 
+      // Include selected subscriber if set
+      if (this.selectedSubscriberId) {
+        url.searchParams.set('subscriber_id', this.selectedSubscriberId)
+      }
+
       // Fetch preview
       const response = await fetch(url)
 
@@ -279,12 +294,12 @@ export default class extends Controller {
     const formData = new FormData()
     formData.append('file', file)
 
-    try {
-      // Show uploading status
-      const uploadingText = `![Uploading ${file.name}...]()`
-      this.editor.replaceSelection(uploadingText)
-      this.editor.focus()
+    // Show uploading status
+    const uploadingText = `![Uploading ${file.name}...]()`
+    this.editor.replaceSelection(uploadingText)
+    this.editor.focus()
 
+    try {
       // Upload the file
       const response = await fetch(this.uploadUrlValue, {
         method: 'POST',
@@ -294,6 +309,12 @@ export default class extends Controller {
         },
         body: formData
       })
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned an error. Please try again.')
+      }
 
       const data = await response.json()
 
@@ -319,6 +340,10 @@ export default class extends Controller {
     } catch (error) {
       console.error('Upload failed:', error)
       alert('Upload failed. Please try again.')
+      // Remove uploading text on error
+      const content = this.editor.getValue()
+      const updatedContent = content.replace(uploadingText, '')
+      this.editor.setValue(updatedContent)
     }
 
     // Clear the file input
@@ -361,5 +386,161 @@ export default class extends Controller {
       )
     }
     this.editor.focus()
+  }
+
+  // Insert merge tag
+  insertMergeTag(event) {
+    event.preventDefault()
+    const tag = event.currentTarget.dataset.tag
+    if (tag) {
+      this.editor.replaceSelection(tag)
+      this.editor.focus()
+    }
+  }
+
+  // Update preview height to match toolbar + editor
+  updatePreviewHeight() {
+    if (!this.hasToolbarTarget || !this.hasEditorCardTarget || !this.hasPreviewTarget) {
+      return
+    }
+
+    // Calculate total height of toolbar + editor
+    const toolbarHeight = this.toolbarTarget.offsetHeight
+    const editorHeight = this.editorCardTarget.offsetHeight
+
+    // Add some margin (toolbar has mb-2 which is ~8px)
+    const totalHeight = toolbarHeight + editorHeight + 8
+
+    // Set preview iframe height
+    this.previewTarget.style.height = `${totalHeight}px`
+  }
+
+  // Prevent form submission on enter in search field
+  handleSearchKeydown(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      return false
+    }
+  }
+
+  // Search subscribers for preview
+  searchSubscribers(event) {
+    const query = event.target.value.trim()
+
+    // Clear any existing timeout
+    if (this.searchDebounce) {
+      clearTimeout(this.searchDebounce)
+    }
+
+    // If query is empty, hide results
+    if (query.length === 0) {
+      this.hideSubscriberResults()
+      return
+    }
+
+    // Show loading state
+    if (this.hasSubscriberResultsTarget) {
+      this.subscriberResultsTarget.innerHTML = '<div class="text-muted text-center py-3">Searching...</div>'
+    }
+
+    // Debounce the search
+    this.searchDebounce = setTimeout(async () => {
+      try {
+        const response = await fetch(`/campaigns/search_subscribers?q=${encodeURIComponent(query)}`, {
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        const results = await response.json()
+        this.displaySubscriberResults(results)
+      } catch (error) {
+        console.error('Failed to search subscribers:', error)
+        if (this.hasSubscriberResultsTarget) {
+          this.subscriberResultsTarget.innerHTML = '<div class="text-danger text-center py-3">Search failed. Please try again.</div>'
+        }
+      }
+    }, 300)
+  }
+
+  displaySubscriberResults(results) {
+    if (!this.hasSubscriberResultsTarget) return
+
+    if (!results || results.length === 0) {
+      this.subscriberResultsTarget.innerHTML = '<div class="text-muted text-center py-3">No subscribers found</div>'
+      return
+    }
+
+    const html = results.map(result => {
+      // Escape HTML to prevent XSS
+      const escapedDisplay = this.escapeHtml(result.display)
+      const escapedEmail = this.escapeHtml(result.email)
+
+      return `
+        <a class="list-group-item list-group-item-action" href="#"
+           data-subscriber-id="${result.id}"
+           data-subscriber-email="${escapedEmail}"
+           data-action="click->markdown-editor#selectSubscriber">
+          ${escapedDisplay}
+        </a>
+      `
+    }).join('')
+
+    this.subscriberResultsTarget.innerHTML = html
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement('div')
+    div.textContent = text
+    return div.innerHTML
+  }
+
+  hideSubscriberResults() {
+    if (this.hasSubscriberResultsTarget) {
+      this.subscriberResultsTarget.innerHTML = '<div class="text-muted text-center py-3">Type to search for subscribers</div>'
+    }
+  }
+
+  selectSubscriber(event) {
+    event.preventDefault()
+
+    const subscriberId = event.currentTarget.dataset.subscriberId
+    const subscriberEmail = event.currentTarget.dataset.subscriberEmail
+
+    // Store selected subscriber on ALL instances of this controller
+    const allControllers = this.application.controllers.filter(c => c.identifier === 'markdown-editor')
+
+    allControllers.forEach(controller => {
+      controller.selectedSubscriberId = subscriberId
+
+      // Update display if target exists
+      if (controller.hasSelectedSubscriberTarget) {
+        controller.selectedSubscriberTarget.textContent = `Preview with: ${subscriberEmail}`
+      }
+
+      // Update preview if it has the method
+      if (controller.hasPreviewTarget && controller.updatePreview) {
+        controller.updatePreview()
+      }
+    })
+
+    // Clear search input
+    if (this.hasSubscriberSearchTarget) {
+      this.subscriberSearchTarget.value = ''
+    }
+
+    // Hide results
+    this.hideSubscriberResults()
+
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('subscriberSelectModal'))
+    if (modal) {
+      modal.hide()
+    }
   }
 }

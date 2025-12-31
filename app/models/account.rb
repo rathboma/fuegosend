@@ -29,6 +29,8 @@ class Account < ApplicationRecord
   validates :name, presence: true
   validates :subdomain, presence: true, uniqueness: true,
             format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
+  validates :default_from_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }
+  validates :default_reply_to_email, format: { with: URI::MailTo::EMAIL_REGEXP, message: "must be a valid email address" }, allow_blank: true
 
   # Check if setup is complete
   def setup_complete?
