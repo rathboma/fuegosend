@@ -244,17 +244,37 @@ class Campaign < ApplicationRecord
   def check_kill_switch!
     return false unless sending?
 
+    # Only check after minimum sample size (50 emails sent)
+    sent_emails = campaign_sends.where(status: ["delivered", "bounced", "complained"]).count
+    return false if sent_emails < 50
+
     # Check cumulative stats for campaign
     hard_bounces = campaign_sends.where(status: "bounced", bounce_type: "permanent").count
     complaints = campaign_sends.where(status: "complained").count
 
-    # Emergency thresholds: >10 hard bounces OR >2 complaints
-    if hard_bounces > 10
-      suspend_campaign!("Emergency stop: #{hard_bounces} hard bounces detected (threshold: 10)")
-      return true
-    elsif complaints > 2
-      suspend_campaign!("Emergency stop: #{complaints} complaints detected (threshold: 2)")
-      return true
+    # Calculate percentage rates
+    bounce_rate = (hard_bounces.to_f / sent_emails * 100).round(2)
+    complaint_rate = (complaints.to_f / sent_emails * 100).round(2)
+
+    # Plan-based thresholds (Free plan is more strict, paid plans more lenient)
+    if account.plan_free?
+      # Free plan: 8% bounce rate OR 0.5% complaint rate
+      if bounce_rate > 8.0
+        suspend_campaign!("Emergency stop: #{bounce_rate}% bounce rate (Free plan threshold: 8%)")
+        return true
+      elsif complaint_rate > 0.5
+        suspend_campaign!("Emergency stop: #{complaint_rate}% complaint rate (Free plan threshold: 0.5%)")
+        return true
+      end
+    else
+      # Paid plans: 15% bounce rate OR 1% complaint rate (less aggressive)
+      if bounce_rate > 15.0
+        suspend_campaign!("Emergency stop: #{bounce_rate}% bounce rate (threshold: 15%)")
+        return true
+      elsif complaint_rate > 1.0
+        suspend_campaign!("Emergency stop: #{complaint_rate}% complaint rate (threshold: 1%)")
+        return true
+      end
     end
 
     false

@@ -1,8 +1,27 @@
 <div class="container-fluid py-4" style="max-width: 1400px;">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fs-2 mb-0">Lists</h1>
-    <%= link_to "New List", new_list_path, class: "btn btn-primary" %>
+    <div>
+      <h1 class="fs-2 mb-0">Lists</h1>
+      <% if current_account.plan_free? %>
+        <small class="text-muted">
+          <%= current_account.lists.count %>/<%= current_account.max_lists %> list used
+        </small>
+      <% end %>
+    </div>
+    <% if current_account.can_create_list? %>
+      <%= link_to "New List", new_list_path, class: "btn btn-primary" %>
+    <% else %>
+      <button class="btn btn-primary" disabled title="Upgrade to create more lists">New List</button>
+    <% end %>
   </div>
+
+  <% if current_account.plan_free? && !current_account.can_create_list? %>
+    <div class="alert alert-warning mb-4">
+      <h5 class="alert-heading">Free Plan Limit Reached</h5>
+      <p class="mb-2">Your Free plan includes 1 list. You've reached this limit.</p>
+      <p class="mb-0"><strong>Upgrade to unlock:</strong> Unlimited lists, priority support, and more features.</p>
+    </div>
+  <% end %>
 
   <% if @lists.any? %>
     <div class="row g-4">

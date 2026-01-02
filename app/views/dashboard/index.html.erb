@@ -1,8 +1,28 @@
 <div class="container-fluid py-4" style="max-width: 1400px;">
   <div class="mb-4">
-    <h1 class="fs-2 mb-2">Dashboard</h1>
-    <p class="text-muted">Welcome back, <%= current_user.first_name || current_user.email %></p>
+    <div class="d-flex justify-content-between align-items-start">
+      <div>
+        <h1 class="fs-2 mb-2">Dashboard</h1>
+        <p class="text-muted mb-0">Welcome back, <%= current_user.first_name || current_user.email %></p>
+      </div>
+      <div>
+        <span class="badge <%= current_account.plan_free? ? 'bg-secondary' : 'bg-success' %> fs-6">
+          <%= current_account.plan.titleize %> Plan
+        </span>
+      </div>
+    </div>
   </div>
+
+  <% if current_account.plan_free? %>
+    <div class="alert alert-info mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>Free Plan:</strong> 1 list, 1 segment, 30-minute smart queueing
+        </div>
+        <span class="text-muted small">Upgrade for unlimited lists/segments & instant sending</span>
+      </div>
+    </div>
+  <% end %>
 
   <!-- Stats Cards -->
   <div class="row g-4 mb-4">
