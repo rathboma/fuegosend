@@ -173,7 +173,7 @@
       <h1>FuegoMail</h1>
       <p>Self-hosted email marketing platform powered by AWS SES</p>
       <% if user_signed_in? %>
-        <%= link_to "Go to Dashboard", authenticated_root_path, class: "cta" %>
+        <%= link_to "Go to Dashboard", "/dashboard", class: "cta" %>
       <% else %>
         <%= link_to "Get Started", new_user_registration_path, class: "cta" %>
       <% end %>
@@ -279,9 +279,9 @@
     <div class="container">
       <p>&copy; <%= Time.current.year %> FuegoMail. Open-source email marketing platform.</p>
       <div class="footer-links">
-        <%= link_to "Documentation", docs_path %>
+        <%= link_to "Documentation", "/docs" %>
         <% if user_signed_in? %>
-          <%= link_to "Dashboard", dashboard_path %>
+          <%= link_to "Dashboard", "/dashboard" %>
           <%= link_to "Sign Out", destroy_user_session_path, data: { turbo_method: :delete } %>
         <% else %>
           <%= link_to "Sign In", new_user_session_path %>
