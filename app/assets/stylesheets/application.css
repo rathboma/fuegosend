@@ -80,6 +80,33 @@
   color: #721c24;
 }
 
+.badge.status-queued_for_review,
+.badge.status-queued-for-review {
+  background-color: #e7f3ff;
+  color: #004085;
+}
+
+.badge.status-canary_processing,
+.badge.status-canary-processing {
+  background-color: #cfe2ff;
+  color: #084298;
+}
+
+.badge.status-approved {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge.status-suspended {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.badge.status-cancelled {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
 .badge.status-active {
   background-color: #d4edda;
   color: #155724;

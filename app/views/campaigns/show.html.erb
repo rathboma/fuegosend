@@ -8,7 +8,15 @@
         </ol>
       </nav>
       <h1 class="fs-2 mb-2"><%= @campaign.name %></h1>
-      <span class="badge status-<%= @campaign.status %>"><%= @campaign.status.titleize %></span>
+      <span class="badge status-<%= @campaign.status %>">
+        <%= case @campaign.status
+            when "queued_for_review" then "Queued for Delivery"
+            when "canary_processing" then "Sending & Verifying"
+            when "approved" then "Approved"
+            when "suspended" then "Suspended"
+            else @campaign.status.titleize
+            end %>
+      </span>
     </div>
     <div class="d-flex gap-2">
       <% if @campaign.draft? %>
@@ -17,14 +25,53 @@
       <% elsif @campaign.scheduled? %>
         <%= button_to "Send Now", send_now_campaign_path(@campaign), method: :post, class: "btn btn-success", data: { turbo_confirm: "Send now instead of waiting?" } %>
         <%= button_to "Cancel", cancel_campaign_path(@campaign), method: :post, class: "btn btn-outline-danger", data: { turbo_confirm: "Cancel this scheduled campaign?" } %>
-      <% elsif @campaign.sending? %>
+      <% elsif @campaign.queued_for_review? %>
+        <span class="text-muted">Processing automatically...</span>
+      <% elsif @campaign.canary_processing? %>
+        <span class="text-muted">Verifying send quality...</span>
+      <% elsif @campaign.approved? || @campaign.sending? %>
         <%= button_to "Pause", pause_campaign_path(@campaign), method: :post, class: "btn btn-warning", data: { turbo_confirm: "Pause sending?" } %>
       <% elsif @campaign.paused? %>
         <%= button_to "Resume", resume_campaign_path(@campaign), method: :post, class: "btn btn-success", data: { turbo_confirm: "Resume sending?" } %>
+      <% elsif @campaign.suspended? %>
+        <span class="text-danger">Campaign suspended - see details below</span>
       <% end %>
       <%= button_to "Delete", @campaign, method: :delete, class: "btn btn-outline-danger", data: { turbo_confirm: "Delete this campaign permanently?" } %>
     </div>
   </div>
+
+  <!-- Risk Management Status Messages -->
+  <% if @campaign.queued_for_review? %>
+    <div class="alert alert-info mb-4">
+      <h5 class="alert-heading">⏱️ Queued for Delivery</h5>
+      <p class="mb-0">Your campaign is in our Smart Queueing system (Free plan feature). It will automatically begin sending after a brief verification period. This helps ensure optimal delivery quality.</p>
+      <% if @campaign.queued_at.present? %>
+        <small class="text-muted">Queued at <%= @campaign.queued_at.strftime("%I:%M %p on %B %d") %></small>
+      <% end %>
+    </div>
+  <% elsif @campaign.canary_processing? %>
+    <div class="alert alert-primary mb-4">
+      <h5 class="alert-heading">🔍 Sending & Verifying</h5>
+      <p class="mb-0">We're sending a test batch to verify send quality before delivering to your full list. This automated quality check protects your sender reputation.</p>
+      <% if @campaign.canary_started_at.present? %>
+        <small class="text-muted">Verification started at <%= @campaign.canary_started_at.strftime("%I:%M %p on %B %d") %></small>
+      <% end %>
+    </div>
+  <% elsif @campaign.suspended? %>
+    <div class="alert alert-danger mb-4">
+      <h5 class="alert-heading">⚠️ Campaign Suspended</h5>
+      <p><strong>Reason:</strong> <%= @campaign.suspension_reason %></p>
+      <p class="mb-0">Your campaign was automatically paused to protect your sender reputation. High bounce or complaint rates can harm your email deliverability.</p>
+      <hr>
+      <p class="mb-0"><strong>Recommended Actions:</strong></p>
+      <ul class="mb-0">
+        <li>Review your subscriber list quality</li>
+        <li>Remove bounced and invalid email addresses</li>
+        <li>Ensure subscribers opted in to receive emails</li>
+        <li>Consider using double opt-in for new subscribers</li>
+      </ul>
+    </div>
+  <% end %>
 
   <!-- Stats Cards -->
   <div class="row g-4 mb-4">
