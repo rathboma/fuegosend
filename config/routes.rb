@@ -10,6 +10,9 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  # Documentation page at /docs
+  get "docs", to: "high_voltage/pages#show", id: "docs"
+
   # Webhooks - SNS notifications from AWS SES
   post "webhooks/sns", to: "webhooks#sns", as: :sns_webhook
 

@@ -749,7 +749,13 @@ X-RateLimit-Reset: 1609459200</code></pre>
   </div>
 
   <div class="footer">
-    <p>&copy; <%= Time.current.year %> FuegoMail. <%= link_to "Back to Home", root_path %></p>
+    <p>&copy; <%= Time.current.year %> FuegoMail.
+    <% if user_signed_in? %>
+      <%= link_to "Dashboard", dashboard_path %>
+    <% else %>
+      <%= link_to "Back to Home", root_path %>
+    <% end %>
+    </p>
   </div>
 </body>
 </html>

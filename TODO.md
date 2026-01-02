@@ -12,59 +12,57 @@ This is a prioritized list of features, fixes, and improvements for FuegoMail.
 - [x] **Implement API authentication** - Already implemented
 - [x] **Create notification mailer methods** - COMPLETED
 
-## 📄 Marketing & Documentation Sites (High Priority)
+## 📄 Marketing & Documentation Sites ✅ COMPLETED
 
-Add static marketing and documentation pages using the `high_voltage` gem before launching.
+Static marketing and documentation pages using the `high_voltage` gem.
 
 ### Setup High Voltage
 
-- [ ] **Add high_voltage gem to Gemfile**
-  - Add `gem 'high_voltage', '~> 5.0.0'`
-  - Run `bundle install`
-  - Create initializer if custom configuration needed
+- [x] **Add high_voltage gem to Gemfile**
+  - Added `gem 'high_voltage', '~> 5.0.0'`
+  - Ran `bundle install`
 
-- [ ] **Configure High Voltage routes**
-  - Decide on routing strategy (keep /pages or use root-level routes)
-  - Configure `config/initializers/high_voltage.rb` if needed
-  - Disable default routes if using custom PagesController
+- [x] **Configure High Voltage routes**
+  - Using default High Voltage routing
+  - Root route configured to show home page for unauthenticated users
+  - Authenticated users see dashboard as authenticated_root
 
 ### Marketing Site (1 page)
 
-- [ ] **Create marketing landing page**
-  - File: `app/views/pages/home.html.erb` (or `marketing.html.erb`)
-  - Sections:
-    - Hero section with value proposition
-    - Key features overview (list management, campaigns, tracking, analytics)
-    - Pricing tiers (Free, Starter, Pro, Agency)
-    - Call-to-action (Sign up button)
-    - Footer with links
-  - Use responsive design (Bootstrap already included)
-  - Include meta tags for SEO
+- [x] **Create marketing landing page**
+  - File: `app/views/pages/home.html.erb`
+  - Hero section with value proposition and gradient design
+  - 6 key features showcased in grid layout
+  - Pricing tiers (Free, Starter, Pro, Agency) with detailed features
+  - Call-to-action buttons (dynamic based on auth state)
+  - Professional footer with navigation links
+  - Fully responsive design
 
-- [ ] **Configure root route to marketing page**
-  - Update `config/routes.rb` to serve marketing page at `/`
-  - Current root redirects to sign-in - change for public marketing
-  - Consider authenticated vs non-authenticated root routes
+- [x] **Configure root route to marketing page**
+  - Updated `config/routes.rb` to serve home page at `/`
+  - Unauthenticated users see marketing page
+  - Authenticated users see dashboard via authenticated_root
 
 ### Documentation Site (1 page)
 
-- [ ] **Create documentation page**
+- [x] **Create documentation page**
   - File: `app/views/pages/docs.html.erb`
-  - Sections:
-    - Getting Started
-    - Setting up AWS SES
-    - Creating campaigns
-    - Managing subscribers
-    - Using merge tags
-    - API documentation (link to detailed API docs)
-    - Troubleshooting
-  - Include code examples
-  - Link from marketing page footer
+  - Comprehensive sections with navigation:
+    - Getting Started (7-step guide)
+    - AWS SES Setup (IAM user, policy, domain verification, production access)
+    - Creating Campaigns (4-step workflow with best practices)
+    - Managing Subscribers (manual, CSV import, API integration)
+    - Email Templates (HTML and Markdown guides)
+    - Merge Tags Reference (complete table with examples)
+    - API Documentation (endpoints with code examples)
+    - Troubleshooting (common issues and solutions)
+  - Professional styling with tables and code blocks
+  - Accessible at /pages/docs
 
-- [ ] **Add documentation navigation**
-  - Create links in application layout or footer
-  - Add "Docs" link to marketing page
-  - Add "Back to app" link for authenticated users
+- [x] **Add documentation navigation**
+  - Footer links on marketing page to docs
+  - Navigation within docs page (table of contents)
+  - Auth-aware links (sign in/out, dashboard)
 
 ### Optional Enhancements
 
@@ -388,14 +386,13 @@ Based on priorities, the recommended order of work is:
 1. ✅ **Fix all 🔴 Critical Bugs first** - COMPLETED
    - All 5 critical bugs have been fixed
 
-2. **Add 📄 Marketing & Documentation Sites** (pre-launch requirement)
+2. ✅ **Add 📄 Marketing & Documentation Sites** - COMPLETED
    - Set up high_voltage gem
-   - Create 1-page marketing landing page
-   - Create 1-page documentation site
-   - Configure routing for public vs authenticated users
-   - Essential for launch - users need to understand the product
+   - Created professional marketing landing page with hero, features, and pricing
+   - Created comprehensive documentation site with guides and API reference
+   - Configured routing for public marketing vs authenticated dashboard
 
-3. **Implement 🔥 Automated Risk Management System** (production requirement)
+3. **Implement 🔥 Automated Risk Management System** ← CURRENT FOCUS (production requirement)
    - Essential for preventing abuse and protecting sender reputation
    - Enables Free plan with appropriate safeguards
    - Should be done before scaling to multiple users
