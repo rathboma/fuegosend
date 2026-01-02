@@ -60,7 +60,7 @@ export default class extends Controller {
     // Initialize CodeMirror with HTML mode
     this.editor = CodeMirror.fromTextArea(this.textareaTarget, {
       mode: 'htmlmixed',
-      theme: 'monokai',
+      theme: 'eclipse',
       lineNumbers: true,
       lineWrapping: true,
       viewportMargin: Infinity,
@@ -69,6 +69,12 @@ export default class extends Controller {
     })
 
     this.editor.setSize(null, '600px')
+
+    // Refresh editor to ensure proper rendering
+    // This fixes the blank editor issue on first load
+    setTimeout(() => {
+      this.editor.refresh()
+    }, 10)
 
     // Update preview on change with debouncing
     this.editor.on('change', () => {

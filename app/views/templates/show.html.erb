@@ -64,9 +64,14 @@
 
           <% if @template.html_content.present? %>
             <div class="mb-3">
-              <strong class="d-block mb-2">HTML Content:</strong>
-              <div class="border p-3 bg-light" style="max-height: 400px; overflow-y: auto;">
-                <%= sanitize(@template.html_content) %>
+              <strong class="d-block mb-2">HTML Preview:</strong>
+              <div class="border" style="max-height: 600px; overflow-y: auto;">
+                <iframe
+                  srcdoc="<%= @template.html_content.gsub('"', '&quot;').html_safe %>"
+                  style="width: 100%; min-height: 600px; border: none; display: block;"
+                  sandbox="allow-same-origin"
+                  title="Template Preview">
+                </iframe>
               </div>
             </div>
           <% end %>
