@@ -127,6 +127,139 @@ class Campaign < ApplicationRecord
     true
   end
 
+  # Process queued campaign after cooldown period (30 minutes)
+  def process_after_cooldown!
+    return false unless queued_for_review?
+    return false unless queued_at.present? && queued_at <= 30.minutes.ago
+
+    # Refresh SES quota before starting
+    account.refresh_ses_quota!
+
+    # Create campaign_sends for all recipients
+    create_campaign_sends!
+
+    # Check if list is large enough to warrant canary testing
+    if total_recipients > 500
+      # Send canary batch (100 random contacts)
+      send_canary_batch!
+    else
+      # Small list, skip canary and go straight to approved
+      update!(status: "approved")
+      start_full_send!
+    end
+
+    true
+  end
+
+  # Send canary batch to 100 random subscribers
+  def send_canary_batch!
+    # Select 100 random campaign_sends
+    canary_batch = campaign_sends.pending.order("RANDOM()").limit(100)
+    canary_ids = canary_batch.pluck(:id)
+
+    update!(
+      status: "canary_processing",
+      canary_started_at: Time.current,
+      canary_send_ids: canary_ids
+    )
+
+    # Notify that canary is being sent
+    notify_sending_started!
+
+    # Enqueue sending jobs for canary batch only
+    canary_batch.each do |campaign_send|
+      Campaigns::SendEmailJob.perform_later(campaign_send.id)
+    end
+
+    true
+  end
+
+  # Analyze canary batch results after 30-minute analysis period
+  def analyze_canary_results!
+    return false unless canary_processing?
+    return false unless canary_started_at.present? && canary_started_at <= 30.minutes.ago
+
+    canary_sends = campaign_sends.where(id: canary_send_ids)
+    total_canary = canary_sends.count
+
+    return false if total_canary.zero?
+
+    # Count failures
+    bounced = canary_sends.where(status: "bounced", bounce_type: "permanent").count
+    complained = canary_sends.where(status: "complained").count
+
+    # Calculate rates
+    bounce_rate = (bounced.to_f / total_canary * 100).round(2)
+    complaint_rate = (complained.to_f / total_canary * 100).round(2)
+
+    # Decision thresholds
+    if bounce_rate > 5.0
+      suspend_campaign!("High bounce rate in canary batch: #{bounce_rate}% (threshold: 5%)")
+      return false
+    elsif complaint_rate > 1.0
+      suspend_campaign!("High complaint rate in canary batch: #{complaint_rate}% (threshold: 1%)")
+      return false
+    else
+      # Passed canary test, approve and send remaining
+      update!(status: "approved")
+      start_full_send!
+      return true
+    end
+  end
+
+  # Start sending to all remaining recipients (after canary approval)
+  def start_full_send!
+    update!(
+      status: "sending",
+      started_sending_at: Time.current
+    )
+
+    # Enqueue sending jobs for remaining (non-canary) recipients
+    remaining_sends = if canary_send_ids.present?
+      campaign_sends.pending.where.not(id: canary_send_ids)
+    else
+      campaign_sends.pending
+    end
+
+    # Enqueue in batches
+    Campaigns::EnqueueSendingJob.perform_later(id)
+
+    true
+  end
+
+  # Suspend campaign due to quality issues
+  def suspend_campaign!(reason)
+    update!(
+      status: "suspended",
+      suspension_reason: reason
+    )
+
+    # Notify account owners/admins
+    notify_sending_failed!(reason)
+
+    true
+  end
+
+  # Check if campaign should be killed (emergency kill-switch during sending)
+  def check_kill_switch!
+    return false unless sending?
+
+    # Check cumulative stats for campaign
+    hard_bounces = campaign_sends.where(status: "bounced", bounce_type: "permanent").count
+    complaints = campaign_sends.where(status: "complained").count
+
+    # Emergency thresholds: >10 hard bounces OR >2 complaints
+    if hard_bounces > 10
+      suspend_campaign!("Emergency stop: #{hard_bounces} hard bounces detected (threshold: 10)")
+      return true
+    elsif complaints > 2
+      suspend_campaign!("Emergency stop: #{complaints} complaints detected (threshold: 2)")
+      return true
+    end
+
+    false
+  end
+
   # Pause campaign
   def pause!(reason: nil)
     return false unless sending?
