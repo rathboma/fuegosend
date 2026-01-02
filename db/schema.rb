@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_02_212149) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_02_212433) do
   create_table "accounts", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "aws_access_key_id"
@@ -29,6 +29,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_212149) do
     t.integer "ses_sent_last_24_hours", default: 0
     t.integer "setup_step", default: 0, null: false
     t.string "subdomain", null: false
+    t.string "tracking_domain"
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_accounts_on_active"
     t.index ["subdomain"], name: "index_accounts_on_subdomain", unique: true
@@ -136,6 +137,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_212149) do
     t.integer "account_id", null: false
     t.text "body_markdown"
     t.integer "bounced_count", default: 0, null: false
+    t.text "canary_send_ids"
+    t.datetime "canary_started_at"
     t.integer "clicked_count", default: 0, null: false
     t.integer "complained_count", default: 0, null: false
     t.datetime "created_at", null: false
@@ -146,6 +149,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_212149) do
     t.integer "list_id", null: false
     t.string "name", null: false
     t.integer "opened_count", default: 0, null: false
+    t.datetime "queued_at"
     t.string "reply_to_email"
     t.datetime "scheduled_at"
     t.integer "segment_id"
@@ -153,6 +157,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_212149) do
     t.datetime "started_sending_at"
     t.string "status", default: "draft", null: false
     t.string "subject", null: false
+    t.string "suspension_reason"
     t.integer "template_id"
     t.integer "total_recipients", default: 0, null: false
     t.integer "unsubscribed_count", default: 0, null: false

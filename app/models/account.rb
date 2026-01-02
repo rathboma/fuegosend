@@ -175,4 +175,26 @@ class Account < ApplicationRecord
     when :agency then 3  # Custom CNAME support
     end
   end
+
+  # Get the tracking domain for this account
+  # Returns custom domain if set (Agency), otherwise returns tier-appropriate domain
+  def get_tracking_domain
+    # If custom domain set (Agency plan), use it
+    return tracking_domain if tracking_domain.present?
+
+    # Otherwise use tier-based defaults
+    case tracking_domain_tier
+    when 1
+      # Free plan: Rotate through disposable domain pool
+      # In production, this would be a pool of domains
+      pool = ["links-a.fuegomail.com", "links-b.fuegomail.com", "links-c.fuegomail.com"]
+      pool[id % pool.size]
+    when 2
+      # Starter/Pro: Premium shared domain
+      "track.fuegomail.com"
+    when 3
+      # Agency: Should have custom domain set, fallback to premium
+      "track.fuegomail.com"
+    end
+  end
 end

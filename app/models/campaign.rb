@@ -11,15 +11,22 @@ class Campaign < ApplicationRecord
   validates :name, :subject, :from_name, :from_email, presence: true
   validates :status, inclusion: { in: %w[draft scheduled queued_for_review canary_processing approved sending sent paused suspended cancelled] }
 
+  # Serialize canary_send_ids as JSON array
+  serialize :canary_send_ids, coder: JSON
+
   # Set default email values from account
   after_initialize :set_default_emails, if: :new_record?
 
   # Scopes
   scope :draft, -> { where(status: "draft") }
   scope :scheduled, -> { where(status: "scheduled") }
+  scope :queued_for_review, -> { where(status: "queued_for_review") }
+  scope :canary_processing, -> { where(status: "canary_processing") }
+  scope :approved, -> { where(status: "approved") }
   scope :sending, -> { where(status: "sending") }
   scope :sent, -> { where(status: "sent") }
   scope :paused, -> { where(status: "paused") }
+  scope :suspended, -> { where(status: "suspended") }
 
   # State checks
   def draft?
@@ -28,6 +35,18 @@ class Campaign < ApplicationRecord
 
   def scheduled?
     status == "scheduled"
+  end
+
+  def queued_for_review?
+    status == "queued_for_review"
+  end
+
+  def canary_processing?
+    status == "canary_processing"
+  end
+
+  def approved?
+    status == "approved"
   end
 
   def sending?
@@ -40,6 +59,10 @@ class Campaign < ApplicationRecord
 
   def paused?
     status == "paused"
+  end
+
+  def suspended?
+    status == "suspended"
   end
 
   # Schedule campaign for sending
