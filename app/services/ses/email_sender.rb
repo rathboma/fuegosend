@@ -117,7 +117,7 @@ module Ses
 
         # Create or find campaign link
         campaign_link = CampaignLink.find_or_create_for_url(campaign, original_url)
-        tracking_url = campaign_link.tracking_url(base_url)
+        tracking_url = campaign_link.tracking_url(tracking_base_url)
 
         # Replace the href
         full_match.gsub(original_url, tracking_url)
@@ -161,12 +161,32 @@ module Ses
     end
 
     def base_url
-      @base_url ||= Rails.application.config.action_mailer.default_url_options[:host] ||
-                    "https://#{account.subdomain}.fuegomail.com"
+      @base_url ||= begin
+        host = Rails.application.config.action_mailer.default_url_options[:host] || account.subdomain + ".fuegomail.com"
+        port = Rails.application.config.action_mailer.default_url_options[:port]
+        protocol = Rails.env.production? ? "https" : "http"
+
+        url = "#{protocol}://#{host}"
+        url += ":#{port}" if port && !Rails.env.production?
+        url
+      end
+    end
+
+    def tracking_base_url
+      @tracking_base_url ||= begin
+        # Use account-specific tracking domain for reputation isolation
+        tracking_domain = account.get_tracking_domain
+        port = Rails.application.config.action_mailer.default_url_options[:port]
+        protocol = Rails.env.production? ? "https" : "http"
+
+        url = "#{protocol}://#{tracking_domain}"
+        url += ":#{port}" if port && !Rails.env.production?
+        url
+      end
     end
 
     def open_tracking_url
-      "#{base_url}/t/o/#{tracking_token}"
+      "#{tracking_base_url}/t/o/#{tracking_token}"
     end
 
     def unsubscribe_url
