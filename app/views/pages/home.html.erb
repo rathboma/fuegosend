@@ -3,157 +3,475 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FuegoMail - Self-Hosted Email Marketing Platform</title>
+  <title>FuegoMail - Email Marketing Platform with Unlimited Contacts</title>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       line-height: 1.6;
-      color: #333;
-      margin: 0;
-      padding: 0;
+      color: #1a1a1a;
     }
-    .hero {
+
+    /* Header */
+    .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 100px 20px;
+      padding: 80px 20px 100px;
       text-align: center;
     }
-    .hero h1 {
-      font-size: 3rem;
+
+    .header h1 {
+      font-size: 3.5rem;
       margin: 0 0 20px 0;
       font-weight: 700;
     }
-    .hero p {
-      font-size: 1.5rem;
+
+    .header .tagline {
+      font-size: 1.8rem;
       margin: 0 0 40px 0;
       opacity: 0.95;
+      font-weight: 300;
     }
-    .hero .cta {
+
+    .header .cta-group {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
       display: inline-block;
       padding: 15px 40px;
-      background: white;
-      color: #667eea;
-      text-decoration: none;
       border-radius: 8px;
       font-weight: 600;
       font-size: 1.1rem;
-      transition: transform 0.2s;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
     }
-    .hero .cta:hover {
+
+    .btn-primary {
+      background: white;
+      color: #667eea;
+    }
+
+    .btn-primary:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
     .container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 20px;
     }
+
+    /* Screenshots Section */
+    .screenshots {
+      padding: 80px 20px;
+      background: #f8f9fa;
+      text-align: center;
+    }
+
+    .screenshots h2 {
+      font-size: 2.5rem;
+      margin-bottom: 50px;
+      color: #1a1a1a;
+    }
+
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .screenshot-card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .screenshot-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #e0e0e0;
+    }
+
+    .screenshot-card .caption {
+      padding: 15px;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    /* Client List */
+    .clients {
+      padding: 60px 20px;
+      background: white;
+      text-align: center;
+    }
+
+    .clients h3 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #999;
+      margin-bottom: 40px;
+    }
+
+    .client-logos {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 60px;
+      flex-wrap: wrap;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .client-logo {
+      width: 120px;
+      height: 60px;
+      background: #f0f0f0;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-weight: 600;
+    }
+
+    /* Features Section */
     .features {
       padding: 80px 20px;
       background: #f8f9fa;
     }
-    .features h2 {
-      text-align: center;
-      font-size: 2.5rem;
-      margin-bottom: 60px;
-      color: #333;
-    }
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 40px;
+
+    .feature-row {
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 0 auto 100px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
     }
-    .feature {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    .feature-row:last-child {
+      margin-bottom: 0;
     }
-    .feature h3 {
-      color: #667eea;
-      font-size: 1.5rem;
-      margin: 0 0 15px 0;
+
+    .feature-row.reverse {
+      direction: rtl;
     }
-    .feature p {
+
+    .feature-row.reverse > * {
+      direction: ltr;
+    }
+
+    .feature-content h3 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+
+    .feature-content p {
+      font-size: 1.1rem;
       color: #666;
-      margin: 0;
+      margin-bottom: 20px;
+      line-height: 1.8;
     }
+
+    .feature-content a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .feature-content a:hover {
+      text-decoration: underline;
+    }
+
+    .feature-image {
+      width: 100%;
+      height: 350px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .feature-row,
+      .feature-row.reverse {
+        grid-template-columns: 1fr;
+        direction: ltr;
+      }
+    }
+
+    /* Pricing Section */
     .pricing {
       padding: 80px 20px;
+      background: white;
     }
+
     .pricing h2 {
       text-align: center;
       font-size: 2.5rem;
-      margin-bottom: 60px;
-      color: #333;
+      margin-bottom: 20px;
+      color: #1a1a1a;
     }
+
+    .pricing .subtitle {
+      text-align: center;
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 60px;
+    }
+
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 30px;
       max-width: 1200px;
-      margin: 0 auto;
+      margin: 0 auto 60px;
     }
+
     .pricing-card {
       background: white;
       border: 2px solid #e0e0e0;
       border-radius: 12px;
       padding: 40px 30px;
       text-align: center;
-      transition: transform 0.2s, border-color 0.2s;
+      transition: all 0.3s;
+      position: relative;
     }
+
     .pricing-card:hover {
       transform: translateY(-5px);
-      border-color: #667eea;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
+
     .pricing-card.featured {
       border-color: #667eea;
       box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+      transform: scale(1.05);
     }
+
+    .pricing-card.featured:hover {
+      transform: scale(1.05) translateY(-5px);
+    }
+
+    .pricing-card .badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #667eea;
+      color: white;
+      padding: 4px 16px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
     .pricing-card h3 {
       font-size: 1.8rem;
       margin: 0 0 10px 0;
-      color: #333;
+      color: #1a1a1a;
     }
+
+    .pricing-card .description {
+      font-size: 0.95rem;
+      color: #999;
+      margin-bottom: 20px;
+    }
+
     .pricing-card .price {
-      font-size: 2.5rem;
+      font-size: 3rem;
       font-weight: 700;
       color: #667eea;
       margin: 20px 0;
     }
+
     .pricing-card .price span {
-      font-size: 1rem;
+      font-size: 1.2rem;
       color: #999;
+      font-weight: 400;
     }
+
     .pricing-card ul {
       list-style: none;
       padding: 0;
       margin: 30px 0;
       text-align: left;
     }
+
     .pricing-card ul li {
-      padding: 10px 0;
+      padding: 12px 0;
       color: #666;
+      position: relative;
+      padding-left: 30px;
     }
+
     .pricing-card ul li:before {
-      content: "✓ ";
+      content: "✓";
       color: #667eea;
       font-weight: bold;
-      margin-right: 8px;
+      position: absolute;
+      left: 0;
+      font-size: 1.2rem;
     }
+
+    .pricing-card ul li.highlight {
+      color: #1a1a1a;
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+
+    .pricing-card .cta-button {
+      width: 100%;
+      padding: 12px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pricing-card .cta-button:hover {
+      background: #5568d3;
+    }
+
+    .pricing-card .cta-button.secondary {
+      background: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .pricing-card .cta-button.secondary:hover {
+      background: #f8f9fa;
+    }
+
+    .pricing-card .footnote {
+      font-size: 0.85rem;
+      color: #999;
+      margin-top: 15px;
+      font-style: italic;
+    }
+
+    /* Comparison Widget */
+    .comparison {
+      max-width: 800px;
+      margin: 60px auto 0;
+      padding: 40px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+
+    .comparison h3 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #1a1a1a;
+    }
+
+    .comparison .scenario {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .comparison .cost-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .comparison .cost-row:last-child {
+      border-bottom: none;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #667eea;
+    }
+
+    .comparison .savings {
+      text-align: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #10b981;
+      margin-top: 20px;
+    }
+
+    /* About Section */
+    .about {
+      padding: 80px 20px;
+      background: #f8f9fa;
+    }
+
+    .about h2 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 40px;
+      color: #1a1a1a;
+    }
+
+    .about-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .about-content p {
+      font-size: 1.2rem;
+      color: #666;
+      margin-bottom: 30px;
+      line-height: 1.8;
+    }
+
+    /* Footer */
     .footer {
       background: #2c3e50;
       color: white;
       padding: 40px 20px;
       text-align: center;
     }
+
     .footer-links {
       margin: 20px 0;
     }
+
     .footer-links a {
       color: white;
       text-decoration: none;
@@ -161,123 +479,257 @@
       opacity: 0.8;
       transition: opacity 0.2s;
     }
+
     .footer-links a:hover {
       opacity: 1;
     }
   </style>
 </head>
 <body>
-  <!-- Hero Section -->
-  <div class="hero">
+  <!-- Header -->
+  <div class="header">
     <div class="container">
       <h1>FuegoMail</h1>
-      <p>Self-hosted email marketing platform powered by AWS SES</p>
-      <% if user_signed_in? %>
-        <%= link_to "Go to Dashboard", "/dashboard", class: "cta" %>
-      <% else %>
-        <%= link_to "Get Started", new_user_registration_path, class: "cta" %>
-      <% end %>
+      <p class="tagline">Unlimited Contacts. Bring Your Own SES. Stop Paying the Subscriber Tax.</p>
+      <div class="cta-group">
+        <% if user_signed_in? %>
+          <%= link_to "Go to Dashboard", "/dashboard", class: "btn btn-primary" %>
+        <% else %>
+          <%= link_to "Start Free", new_user_registration_path, class: "btn btn-primary" %>
+          <%= link_to "View Pricing", "#pricing", class: "btn btn-secondary" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screenshots Section -->
+  <div class="screenshots">
+    <h2>Built for Modern Email Marketing</h2>
+    <div class="screenshot-grid">
+      <div class="screenshot-card">
+        <img src="https://placehold.co/400x200/667eea/white?text=Campaign+Builder" alt="Campaign Builder">
+        <div class="caption">Campaign Builder</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="https://placehold.co/400x200/764ba2/white?text=Analytics" alt="Analytics">
+        <div class="caption">Real-Time Analytics</div>
+      </div>
+      <div class="screenshot-card">
+        <img src="https://placehold.co/400x200/667eea/white?text=Subscriber+Management" alt="Subscriber Management">
+        <div class="caption">Subscriber Management</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client List -->
+  <div class="clients">
+    <h3>Trusted by Teams Around the World</h3>
+    <div class="client-logos">
+      <div class="client-logo">Client 1</div>
+      <div class="client-logo">Client 2</div>
+      <div class="client-logo">Client 3</div>
+      <div class="client-logo">Client 4</div>
+      <div class="client-logo">Client 5</div>
     </div>
   </div>
 
   <!-- Features Section -->
   <div class="features">
-    <div class="container">
-      <h2>Why Choose FuegoMail?</h2>
-      <div class="feature-grid">
-        <div class="feature">
-          <h3>🚀 Self-Hosted Control</h3>
-          <p>Deploy on your own infrastructure. You own your data, you control your destiny. No vendor lock-in.</p>
-        </div>
-        <div class="feature">
-          <h3>💰 Cost-Effective</h3>
-          <p>Leverage AWS SES pricing - pay only $0.10 per 1,000 emails. No monthly platform fees, no hidden costs.</p>
-        </div>
-        <div class="feature">
-          <h3>📊 Advanced Segmentation</h3>
-          <p>Target your audience with powerful segmentation rules. Send the right message to the right people.</p>
-        </div>
-        <div class="feature">
-          <h3>🎨 Beautiful Templates</h3>
-          <p>Create stunning emails with our HTML and Markdown editor. Real-time preview shows exactly what subscribers see.</p>
-        </div>
-        <div class="feature">
-          <h3>📈 Real-Time Analytics</h3>
-          <p>Track opens, clicks, bounces, and complaints. Comprehensive campaign statistics at your fingertips.</p>
-        </div>
-        <div class="feature">
-          <h3>🔌 RESTful API</h3>
-          <p>Integrate with your existing tools. Full-featured API for subscribers, campaigns, lists, and more.</p>
-        </div>
+    <!-- Feature 1 -->
+    <div class="feature-row">
+      <div class="feature-content">
+        <h3>1. Unlimited Contacts, Always</h3>
+        <p>Stop paying per subscriber. Import as many contacts as you need. We charge for platform features, not your list size. Whether you have 1,000 or 1,000,000 contacts, your plan stays the same.</p>
+        <a href="/docs#subscribers">Learn about subscriber management →</a>
+      </div>
+      <div class="feature-image">
+        Screenshot Placeholder
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="feature-row reverse">
+      <div class="feature-content">
+        <h3>2. Bring Your Own AWS SES</h3>
+        <p>Connect your Amazon SES account and pay only $0.10 per 1,000 emails. No markup, no hidden fees. You maintain full control over your sending infrastructure and reputation.</p>
+        <a href="/docs#aws-setup">View AWS setup guide →</a>
+      </div>
+      <div class="feature-image">
+        Screenshot Placeholder
+      </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="feature-row">
+      <div class="feature-content">
+        <h3>3. Advanced Segmentation</h3>
+        <p>Target the right audience with powerful segmentation rules. Create dynamic segments based on custom attributes, engagement, and behavior. Send personalized campaigns that convert.</p>
+        <a href="/docs#segments">Explore segmentation →</a>
+      </div>
+      <div class="feature-image">
+        Screenshot Placeholder
+      </div>
+    </div>
+
+    <!-- Feature 4 -->
+    <div class="feature-row reverse">
+      <div class="feature-content">
+        <h3>4. Real-Time Analytics</h3>
+        <p>Track opens, clicks, bounces, and complaints in real-time. Comprehensive campaign statistics help you optimize your email strategy and improve engagement with every send.</p>
+        <a href="/docs#campaigns">See analytics features →</a>
+      </div>
+      <div class="feature-image">
+        Screenshot Placeholder
+      </div>
+    </div>
+
+    <!-- Feature 5 -->
+    <div class="feature-row">
+      <div class="feature-content">
+        <h3>5. RESTful API</h3>
+        <p>Integrate with your existing tools and workflows. Full-featured API for subscribers, campaigns, lists, and more. Build custom automation and sync data seamlessly.</p>
+        <a href="/docs#api">View API documentation →</a>
+      </div>
+      <div class="feature-image">
+        Screenshot Placeholder
       </div>
     </div>
   </div>
 
   <!-- Pricing Section -->
-  <div class="pricing">
-    <div class="container">
-      <h2>Simple, Transparent Pricing</h2>
-      <div class="pricing-grid">
-        <div class="pricing-card">
-          <h3>Free</h3>
-          <div class="price">$0<span>/month</span></div>
-          <ul>
-            <li>500 subscribers</li>
-            <li>2,500 emails/month</li>
-            <li>1 list</li>
-            <li>Basic templates</li>
-            <li>Email support</li>
-          </ul>
+  <div class="pricing" id="pricing">
+    <h2>Simple, Transparent Pricing</h2>
+    <p class="subtitle">All plans include Unlimited Contacts. You only pay for the features you need.</p>
+
+    <div class="pricing-grid">
+      <!-- Free Plan -->
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <p class="description">For validation & hobbyists.</p>
+        <div class="price">$0<span>/mo</span></div>
+        <ul>
+          <li class="highlight">Unlimited Contacts</li>
+          <li>10,000 Emails / mo</li>
+          <li>1 User Seat</li>
+          <li>Shared Tracking Domain</li>
+          <li>Community Support</li>
+          <li>Standard Speed (Queue)</li>
+        </ul>
+        <% if user_signed_in? %>
+          <button class="cta-button secondary" disabled>Current Plan</button>
+        <% else %>
+          <%= link_to "Start for Free", new_user_registration_path, class: "cta-button secondary", style: "display: block; text-decoration: none;" %>
+        <% end %>
+      </div>
+
+      <!-- Starter Plan -->
+      <div class="pricing-card">
+        <h3>Starter</h3>
+        <p class="description">For creators & growing lists.</p>
+        <div class="price">$29<span>/mo</span></div>
+        <ul>
+          <li class="highlight">Unlimited Contacts</li>
+          <li>300,000 Emails / mo</li>
+          <li>3 User Seats</li>
+          <li>Custom Tracking Domain</li>
+          <li>Email Support</li>
+          <li>Instant Sending Speed</li>
+        </ul>
+        <% if user_signed_in? %>
+          <button class="cta-button">Upgrade to Starter</button>
+        <% else %>
+          <%= link_to "Get Started", new_user_registration_path, class: "cta-button", style: "display: block; text-decoration: none;" %>
+        <% end %>
+      </div>
+
+      <!-- Pro Plan (Featured) -->
+      <div class="pricing-card featured">
+        <div class="badge">Best Value</div>
+        <h3>Pro</h3>
+        <p class="description">For scaling businesses.</p>
+        <div class="price">$59<span>/mo</span></div>
+        <ul>
+          <li class="highlight">Unlimited Contacts</li>
+          <li>1,000,000 Emails / mo</li>
+          <li>10 User Seats</li>
+          <li>Custom Tracking Domain (Required)</li>
+          <li>Priority Email Support</li>
+          <li>Dedicated IP Setup Help</li>
+        </ul>
+        <% if user_signed_in? %>
+          <button class="cta-button">Upgrade to Pro</button>
+        <% else %>
+          <%= link_to "Go Pro", new_user_registration_path, class: "cta-button", style: "display: block; text-decoration: none;" %>
+        <% end %>
+      </div>
+
+      <!-- Agency Plan -->
+      <div class="pricing-card">
+        <h3>Agency</h3>
+        <p class="description">For resellers & power users.</p>
+        <div class="price">$129<span>/mo</span></div>
+        <ul>
+          <li class="highlight">Unlimited Contacts</li>
+          <li class="highlight">Unlimited Emails</li>
+          <li class="highlight">Unlimited Seats</li>
+          <li>Includes 3 Sub-Accounts</li>
+          <li>White-Label Dashboard</li>
+          <li>Dedicated Slack Support</li>
+        </ul>
+        <% if user_signed_in? %>
+          <button class="cta-button">Contact Sales</button>
+        <% else %>
+          <%= link_to "Start Agency", new_user_registration_path, class: "cta-button", style: "display: block; text-decoration: none;" %>
+        <% end %>
+        <p class="footnote">Additional sub-accounts +$49/mo each</p>
+      </div>
+    </div>
+
+    <!-- Comparison Widget -->
+    <div class="comparison">
+      <h3>Stop Paying the "Subscriber Tax"</h3>
+      <p style="color: #666; margin-bottom: 20px;">See how much you save vs Mailchimp:</p>
+
+      <div class="scenario">
+        <p style="margin-bottom: 15px;"><strong>Scenario:</strong> 50,000 Contacts, 200,000 Sends/month</p>
+
+        <div class="cost-row">
+          <span>Mailchimp Cost:</span>
+          <span style="font-weight: 600;">~$350/mo</span>
         </div>
-        <div class="pricing-card featured">
-          <h3>Starter</h3>
-          <div class="price">$0<span>/month</span></div>
-          <ul>
-            <li>5,000 subscribers</li>
-            <li>25,000 emails/month</li>
-            <li>Unlimited lists</li>
-            <li>Custom templates</li>
-            <li>Advanced segmentation</li>
-            <li>Priority support</li>
-          </ul>
+
+        <div class="cost-row" style="border-bottom: 2px solid #667eea;">
+          <span>FuegoMail Cost:</span>
+          <span>
+            <div>$29 (Starter Plan)</div>
+            <div style="font-size: 0.9rem; color: #999;">+ ~$20 (Amazon SES)</div>
+          </span>
         </div>
-        <div class="pricing-card">
-          <h3>Pro</h3>
-          <div class="price">$0<span>/month</span></div>
-          <ul>
-            <li>25,000 subscribers</li>
-            <li>125,000 emails/month</li>
-            <li>Unlimited lists</li>
-            <li>Custom templates</li>
-            <li>Advanced segmentation</li>
-            <li>API access</li>
-            <li>Priority support</li>
-          </ul>
-        </div>
-        <div class="pricing-card">
-          <h3>Agency</h3>
-          <div class="price">$0<span>/month</span></div>
-          <ul>
-            <li>Unlimited subscribers</li>
-            <li>Unlimited emails</li>
-            <li>Unlimited lists</li>
-            <li>White-label options</li>
-            <li>Multi-tenant support</li>
-            <li>Dedicated support</li>
-          </ul>
+
+        <div class="cost-row">
+          <span>Your Total:</span>
+          <span>$49/mo</span>
         </div>
       </div>
-      <div style="text-align: center; margin-top: 40px; color: #666;">
-        <p><strong>Note:</strong> FuegoMail is free to self-host. You only pay for AWS SES usage ($0.10 per 1,000 emails).</p>
-        <p>Pricing tiers represent suggested usage limits and feature availability for different deployment scenarios.</p>
-      </div>
+
+      <div class="savings">Save ~85% ($301/mo)</div>
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <div class="about">
+    <h2>About FuegoMail</h2>
+    <div class="about-content">
+      <p>FuegoMail was built for email marketers tired of paying exponentially more as their lists grow. By bringing your own AWS SES account, you maintain full control over your sending infrastructure while accessing enterprise-grade email marketing features.</p>
+      <p>We believe in transparent pricing that scales with your needs, not your subscriber count. Whether you're a solo creator or managing campaigns for multiple clients, FuegoMail provides the tools you need without the inflated costs.</p>
+      <p>Join thousands of marketers who have already made the switch to smarter email marketing.</p>
     </div>
   </div>
 
   <!-- Footer -->
   <div class="footer">
     <div class="container">
-      <p>&copy; <%= Time.current.year %> FuegoMail. Open-source email marketing platform.</p>
+      <p>&copy; <%= Time.current.year %> FuegoMail. Professional email marketing platform.</p>
       <div class="footer-links">
         <%= link_to "Documentation", "/docs" %>
         <% if user_signed_in? %>
