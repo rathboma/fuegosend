@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documentation - FuegoMail</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      opacity: 0.9;
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .doc-section {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .doc-section h2 {
+      color: #667eea;
+      margin-top: 0;
+      font-size: 2rem;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 15px;
+    }
+    .doc-section h3 {
+      color: #555;
+      margin-top: 30px;
+      font-size: 1.5rem;
+    }
+    .doc-section h4 {
+      color: #666;
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+    .doc-section code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: "Monaco", "Menlo", monospace;
+      font-size: 0.9em;
+      color: #d63384;
+    }
+    .doc-section pre {
+      background: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: "Monaco", "Menlo", monospace;
+      font-size: 0.9em;
+    }
+    .doc-section pre code {
+      background: none;
+      padding: 0;
+      color: #fff;
+    }
+    .doc-section ul, .doc-section ol {
+      margin: 15px 0;
+      padding-left: 25px;
+    }
+    .doc-section li {
+      margin: 10px 0;
+    }
+    .alert {
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .alert-info {
+      background: #d1ecf1;
+      border-left: 4px solid #0c5460;
+      color: #0c5460;
+    }
+    .alert-warning {
+      background: #fff3cd;
+      border-left: 4px solid #856404;
+      color: #856404;
+    }
+    .nav-links {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .nav-links h3 {
+      margin: 0 0 15px 0;
+      color: #667eea;
+    }
+    .nav-links ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .nav-links ul li {
+      margin: 8px 0;
+    }
+    .nav-links a {
+      color: #667eea;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .nav-links a:hover {
+      opacity: 0.7;
+    }
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: #666;
+    }
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>FuegoMail Documentation</h1>
+    <p>Everything you need to know to get started with email marketing</p>
+  </div>
+
+  <div class="container">
+    <!-- Table of Contents -->
+    <div class="nav-links">
+      <h3>Quick Navigation</h3>
+      <ul>
+        <li><a href="#getting-started">Getting Started</a></li>
+        <li><a href="#aws-setup">AWS SES Setup</a></li>
+        <li><a href="#campaigns">Creating Campaigns</a></li>
+        <li><a href="#subscribers">Managing Subscribers</a></li>
+        <li><a href="#templates">Email Templates</a></li>
+        <li><a href="#merge-tags">Merge Tags Reference</a></li>
+        <li><a href="#api">API Documentation</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </div>
+
+    <!-- Getting Started -->
+    <div class="doc-section" id="getting-started">
+      <h2>Getting Started</h2>
+
+      <h3>Welcome to FuegoMail</h3>
+      <p>FuegoMail is a self-hosted email marketing platform that leverages AWS SES for reliable, cost-effective email delivery. This guide will help you get up and running quickly.</p>
+
+      <h3>Initial Setup</h3>
+      <ol>
+        <li><strong>Sign Up:</strong> Create your account at the <a href="<%= new_user_registration_path %>">registration page</a></li>
+        <li><strong>Complete Setup Wizard:</strong> Follow the guided setup to configure your account name, AWS credentials, and branding</li>
+        <li><strong>Verify Your Domain:</strong> Add DNS records in AWS SES to verify your sending domain</li>
+        <li><strong>Create Your First List:</strong> Organize your subscribers into lists for targeted campaigns</li>
+        <li><strong>Import Subscribers:</strong> Upload a CSV file or add subscribers via the API</li>
+        <li><strong>Create Your First Campaign:</strong> Design, preview, and send your first email</li>
+      </ol>
+
+      <div class="alert alert-info">
+        <strong>Pro Tip:</strong> Start with the setup wizard when you first log in. It guides you through all essential configuration steps.
+      </div>
+    </div>
+
+    <!-- AWS SES Setup -->
+    <div class="doc-section" id="aws-setup">
+      <h2>AWS SES Setup</h2>
+
+      <h3>Prerequisites</h3>
+      <ul>
+        <li>An AWS account with billing enabled</li>
+        <li>Access to AWS IAM to create users and policies</li>
+        <li>A verified domain or email address</li>
+      </ul>
+
+      <h3>Step 1: Create IAM User</h3>
+      <ol>
+        <li>Log into AWS Console and navigate to IAM</li>
+        <li>Create a new user for FuegoMail (e.g., "fuegomail-sender")</li>
+        <li>Select "Programmatic access" for access type</li>
+        <li>Save the Access Key ID and Secret Access Key (you'll need these later)</li>
+      </ol>
+
+      <h3>Step 2: Attach IAM Policy</h3>
+      <p>Attach this policy to grant necessary permissions:</p>
+      <pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail",
+        "ses:SendTemplatedEmail",
+        "ses:GetSendQuota",
+        "ses:GetSendStatistics",
+        "ses:ListVerifiedEmailAddresses"
+      ],
+      "Resource": "*"
+    }
+  ]
+}</code></pre>
+
+      <h3>Step 3: Verify Your Domain</h3>
+      <ol>
+        <li>Navigate to AWS SES Console</li>
+        <li>Go to "Verified identities" and click "Create identity"</li>
+        <li>Select "Domain" and enter your domain name</li>
+        <li>Add the provided DNS records to your domain registrar</li>
+        <li>Wait for verification (usually takes 24-72 hours)</li>
+      </ol>
+
+      <h3>Step 4: Request Production Access</h3>
+      <p>By default, AWS SES accounts are in sandbox mode with limitations:</p>
+      <ul>
+        <li>Can only send to verified email addresses</li>
+        <li>Limited to 200 emails per day</li>
+        <li>Maximum send rate of 1 email per second</li>
+      </ul>
+      <p>To remove these restrictions:</p>
+      <ol>
+        <li>In AWS SES Console, go to "Account dashboard"</li>
+        <li>Click "Request production access"</li>
+        <li>Describe your use case and email sending practices</li>
+        <li>Submit the request (approval usually takes 24 hours)</li>
+      </ol>
+
+      <div class="alert alert-warning">
+        <strong>Important:</strong> Store your AWS credentials securely. FuegoMail encrypts credentials using Active Record encryption.
+      </div>
+
+      <h3>Step 5: Configure FuegoMail</h3>
+      <p>Enter your AWS credentials in the setup wizard or account settings:</p>
+      <ul>
+        <li><strong>Access Key ID:</strong> From Step 1</li>
+        <li><strong>Secret Access Key:</strong> From Step 1</li>
+        <li><strong>Region:</strong> The AWS region where your SES is configured (e.g., us-east-1)</li>
+      </ul>
+    </div>
+
+    <!-- Creating Campaigns -->
+    <div class="doc-section" id="campaigns">
+      <h2>Creating Campaigns</h2>
+
+      <h3>Campaign Types</h3>
+      <p>FuegoMail supports several campaign types:</p>
+      <ul>
+        <li><strong>Regular Campaign:</strong> Send to a list of subscribers</li>
+        <li><strong>Segmented Campaign:</strong> Target specific subscriber segments</li>
+        <li><strong>Scheduled Campaign:</strong> Schedule for future delivery</li>
+      </ul>
+
+      <h3>Creating a Campaign</h3>
+      <ol>
+        <li>Navigate to <strong>Campaigns</strong> in the dashboard</li>
+        <li>Click <strong>New Campaign</strong></li>
+        <li><strong>Step 1 - Details:</strong>
+          <ul>
+            <li>Enter campaign name (internal reference)</li>
+            <li>Enter email subject line</li>
+            <li>Set from name and email address</li>
+            <li>Add reply-to email (optional)</li>
+          </ul>
+        </li>
+        <li><strong>Step 2 - Content:</strong>
+          <ul>
+            <li>Choose a template or start from scratch</li>
+            <li>Write your email using Markdown or HTML</li>
+            <li>Use merge tags to personalize content</li>
+            <li>Preview shows real-time rendering</li>
+          </ul>
+        </li>
+        <li><strong>Step 3 - Audience:</strong>
+          <ul>
+            <li>Select target list or segment</li>
+            <li>Review subscriber count</li>
+            <li>See estimated cost</li>
+          </ul>
+        </li>
+        <li><strong>Step 4 - Review:</strong>
+          <ul>
+            <li>Send test email to yourself</li>
+            <li>Review all campaign details</li>
+            <li>Send now or schedule for later</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3>Best Practices</h3>
+      <ul>
+        <li>Always send a test email before sending to your full list</li>
+        <li>Use merge tags to personalize content (increases engagement)</li>
+        <li>Keep subject lines under 50 characters for better mobile display</li>
+        <li>Include an unsubscribe link (automatically added to templates)</li>
+        <li>Test your emails across different email clients</li>
+      </ul>
+    </div>
+
+    <!-- Managing Subscribers -->
+    <div class="doc-section" id="subscribers">
+      <h2>Managing Subscribers</h2>
+
+      <h3>Adding Subscribers</h3>
+      <p>You can add subscribers in several ways:</p>
+
+      <h4>Manual Entry</h4>
+      <ol>
+        <li>Go to <strong>Subscribers</strong> in the dashboard</li>
+        <li>Click <strong>New Subscriber</strong></li>
+        <li>Enter email address and optional custom attributes</li>
+        <li>Select lists to add subscriber to</li>
+      </ol>
+
+      <h4>CSV Import</h4>
+      <ol>
+        <li>Prepare a CSV file with headers: email, name, first_name, last_name, etc.</li>
+        <li>Go to <strong>Subscribers</strong> and click <strong>Import</strong></li>
+        <li>Upload your CSV file</li>
+        <li>Map CSV columns to subscriber fields</li>
+        <li>Select target list</li>
+        <li>Import processes in the background</li>
+      </ol>
+
+      <h4>API Integration</h4>
+      <p>Use the RESTful API to programmatically manage subscribers:</p>
+      <pre><code>POST /api/v1/subscribers
+{
+  "email": "user@example.com",
+  "custom_attributes": {
+    "name": "John Doe",
+    "first_name": "John",
+    "last_name": "Doe"
+  },
+  "list_ids": [1, 2]
+}</code></pre>
+
+      <h3>Subscriber Status</h3>
+      <ul>
+        <li><strong>Active:</strong> Subscribed and ready to receive emails</li>
+        <li><strong>Unsubscribed:</strong> Opted out of emails</li>
+        <li><strong>Bounced:</strong> Email address had a hard bounce</li>
+        <li><strong>Complained:</strong> Marked email as spam</li>
+      </ul>
+
+      <h3>Custom Attributes</h3>
+      <p>Store custom data about subscribers:</p>
+      <ul>
+        <li>Name, first name, last name</li>
+        <li>Company, job title</li>
+        <li>Location, timezone</li>
+        <li>Any other custom fields you need</li>
+      </ul>
+      <p>Use custom attributes in merge tags to personalize emails.</p>
+    </div>
+
+    <!-- Email Templates -->
+    <div class="doc-section" id="templates">
+      <h2>Email Templates</h2>
+
+      <h3>Template Types</h3>
+      <p>FuegoMail supports two template formats:</p>
+
+      <h4>HTML Templates</h4>
+      <ul>
+        <li>Full control over email design</li>
+        <li>Use inline CSS for styling</li>
+        <li>Insert images with image upload tool</li>
+        <li>Real-time preview with sample content</li>
+      </ul>
+
+      <h4>Markdown Templates (for content only)</h4>
+      <ul>
+        <li>Simple formatting for email body content</li>
+        <li>Automatically converted to HTML</li>
+        <li>Use in campaign content area</li>
+        <li>Great for newsletters and updates</li>
+      </ul>
+
+      <h3>Creating a Template</h3>
+      <ol>
+        <li>Navigate to <strong>Templates</strong></li>
+        <li>Click <strong>New Template</strong></li>
+        <li>Enter template name and description</li>
+        <li>Write your HTML in the code editor</li>
+        <li>Use merge tags for dynamic content</li>
+        <li>Preview updates in real-time</li>
+        <li>Save template</li>
+      </ol>
+
+      <h3>Template Structure</h3>
+      <p>A typical email template includes:</p>
+      <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div style="max-width: 600px; margin: 0 auto;"&gt;
+    &lt;img src="{{logo_url}}" alt="Logo"&gt;
+
+    {{{content}}}
+
+    &lt;footer&gt;
+      &lt;p&gt;&copy; {{current_year}} {{account_name}}&lt;/p&gt;
+      &lt;a href="{{unsubscribe_url}}"&gt;Unsubscribe&lt;/a&gt;
+    &lt;/footer&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+      <div class="alert alert-info">
+        <strong>Note:</strong> Use <code>{{{content}}}</code> with three braces to render HTML content without escaping.
+      </div>
+    </div>
+
+    <!-- Merge Tags Reference -->
+    <div class="doc-section" id="merge-tags">
+      <h2>Merge Tags Reference</h2>
+
+      <p>Merge tags personalize emails by inserting dynamic content. Use Mustache syntax: <code>{{tag_name}}</code></p>
+
+      <h3>Subscriber Tags</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="background: #f5f5f5;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Tag</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Example</th>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{email}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Subscriber's email address</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">user@example.com</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{name}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Subscriber's full name</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">John Doe</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{first_name}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Subscriber's first name</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">John</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{last_name}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Subscriber's last name</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Doe</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{custom_attribute_name}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Any custom attribute</td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Replace with actual attribute</td>
+        </tr>
+      </table>
+
+      <h3>Campaign Tags</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr style="background: #f5f5f5;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Tag</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{campaign_name}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Name of the campaign</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{campaign_subject}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Campaign subject line</td>
+        </tr>
+      </table>
+
+      <h3>Account Tags</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr style="background: #f5f5f5;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Tag</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{account_name}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Your account name</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{logo_url}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">URL to your uploaded logo</td>
+        </tr>
+      </table>
+
+      <h3>System Tags</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <tr style="background: #f5f5f5;">
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Tag</th>
+          <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{{content}}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Campaign body content (use 3 braces for HTML)</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{unsubscribe_url}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Unique unsubscribe link</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px; border: 1px solid #ddd;"><code>{{current_year}}</code></td>
+          <td style="padding: 10px; border: 1px solid #ddd;">Current year (e.g., 2026)</td>
+        </tr>
+      </table>
+
+      <h3>Usage Examples</h3>
+      <pre><code>Hi {{first_name}},
+
+Welcome to our newsletter! We're excited to have you on board.
+
+Your email is: {{email}}
+
+&copy; {{current_year}} {{account_name}}
+
+&lt;a href="{{unsubscribe_url}}"&gt;Unsubscribe&lt;/a&gt;</code></pre>
+    </div>
+
+    <!-- API Documentation -->
+    <div class="doc-section" id="api">
+      <h2>API Documentation</h2>
+
+      <h3>Authentication</h3>
+      <p>FuegoMail uses bearer token authentication for API requests.</p>
+
+      <h4>Creating an API Key</h4>
+      <ol>
+        <li>Navigate to <strong>Account Settings</strong></li>
+        <li>Go to <strong>API Keys</strong> section</li>
+        <li>Click <strong>Create API Key</strong></li>
+        <li>Enter a name for the key</li>
+        <li>Copy the generated key (you won't see it again)</li>
+      </ol>
+
+      <h4>Using the API Key</h4>
+      <p>Include the API key in the Authorization header:</p>
+      <pre><code>Authorization: Bearer YOUR_API_KEY_HERE</code></pre>
+
+      <h3>API Endpoints</h3>
+      <p>Base URL: <code>https://your-domain.com/api/v1</code></p>
+
+      <h4>Subscribers</h4>
+      <pre><code># List subscribers
+GET /api/v1/subscribers
+
+# Get subscriber
+GET /api/v1/subscribers/:id
+
+# Create subscriber
+POST /api/v1/subscribers
+{
+  "email": "user@example.com",
+  "custom_attributes": { "name": "John Doe" },
+  "list_ids": [1, 2]
+}
+
+# Update subscriber
+PATCH /api/v1/subscribers/:id
+{
+  "custom_attributes": { "name": "Jane Doe" }
+}
+
+# Delete subscriber
+DELETE /api/v1/subscribers/:id
+
+# Unsubscribe
+POST /api/v1/subscribers/:id/unsubscribe
+
+# Resubscribe
+POST /api/v1/subscribers/:id/resubscribe</code></pre>
+
+      <h4>Lists</h4>
+      <pre><code># List all lists
+GET /api/v1/lists
+
+# Get list
+GET /api/v1/lists/:id
+
+# Create list
+POST /api/v1/lists
+{
+  "name": "Newsletter Subscribers",
+  "description": "Main newsletter list"
+}
+
+# Update list
+PATCH /api/v1/lists/:id
+
+# Delete list
+DELETE /api/v1/lists/:id
+
+# Get list subscribers
+GET /api/v1/lists/:id/subscribers
+
+# Add subscriber to list
+POST /api/v1/lists/:id/subscribers
+{
+  "subscriber_id": 123
+}
+
+# Remove subscriber from list
+DELETE /api/v1/lists/:id/subscribers/:subscriber_id</code></pre>
+
+      <h4>Campaigns</h4>
+      <pre><code># List campaigns
+GET /api/v1/campaigns
+
+# Get campaign
+GET /api/v1/campaigns/:id
+
+# Create campaign
+POST /api/v1/campaigns
+{
+  "name": "Monthly Newsletter",
+  "subject": "Updates for January",
+  "from_name": "Company Name",
+  "from_email": "hello@company.com",
+  "body_markdown": "# Hello\n\nYour content here"
+}
+
+# Send campaign
+POST /api/v1/campaigns/:id/send_now
+
+# Schedule campaign
+POST /api/v1/campaigns/:id/schedule
+{
+  "scheduled_at": "2026-01-15T10:00:00Z"
+}
+
+# Get campaign statistics
+GET /api/v1/campaigns/:id/stats</code></pre>
+
+      <h3>Rate Limits</h3>
+      <p>API requests are rate limited to prevent abuse:</p>
+      <ul>
+        <li><strong>Free tier:</strong> 60 requests per minute</li>
+        <li><strong>Paid tiers:</strong> 300 requests per minute</li>
+      </ul>
+      <p>Rate limit information is included in response headers:</p>
+      <pre><code>X-RateLimit-Limit: 300
+X-RateLimit-Remaining: 285
+X-RateLimit-Reset: 1609459200</code></pre>
+
+      <div class="alert alert-info">
+        <strong>Full API Documentation:</strong> For complete API reference with all endpoints and parameters, visit your dashboard's API section.
+      </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="doc-section" id="troubleshooting">
+      <h2>Troubleshooting</h2>
+
+      <h3>Common Issues</h3>
+
+      <h4>Emails Not Sending</h4>
+      <p><strong>Problem:</strong> Campaigns stuck in "sending" or emails not arriving</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Verify AWS credentials are correct in account settings</li>
+        <li>Check if AWS SES account is out of sandbox mode</li>
+        <li>Verify your domain in AWS SES console</li>
+        <li>Check AWS SES sending limits haven't been exceeded</li>
+        <li>Review campaign logs for specific errors</li>
+      </ul>
+
+      <h4>High Bounce Rate</h4>
+      <p><strong>Problem:</strong> Many emails bouncing</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Clean your email list regularly</li>
+        <li>Use double opt-in for new subscribers</li>
+        <li>Remove hard bounces immediately</li>
+        <li>Validate email addresses before adding to lists</li>
+        <li>Check SPF/DKIM records are properly configured</li>
+      </ul>
+
+      <h4>Emails Going to Spam</h4>
+      <p><strong>Problem:</strong> Subscribers not receiving emails or finding them in spam</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Set up SPF, DKIM, and DMARC records properly</li>
+        <li>Warm up your sending domain gradually</li>
+        <li>Avoid spam trigger words in subject and content</li>
+        <li>Maintain good sender reputation</li>
+        <li>Include plain text version of emails</li>
+        <li>Make unsubscribe link prominent and easy to use</li>
+        <li>Use consistent from name and email address</li>
+      </ul>
+
+      <h4>Template Preview Not Showing</h4>
+      <p><strong>Problem:</strong> Template editor preview is blank or showing errors</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Check for syntax errors in your HTML</li>
+        <li>Ensure merge tags are properly formatted</li>
+        <li>Refresh the page if editor appears blank</li>
+        <li>Check browser console for JavaScript errors</li>
+      </ul>
+
+      <h4>Import Fails</h4>
+      <p><strong>Problem:</strong> CSV import not working</p>
+      <p><strong>Solutions:</strong></p>
+      <ul>
+        <li>Verify CSV has required headers (at minimum "email")</li>
+        <li>Check file encoding is UTF-8</li>
+        <li>Ensure email addresses are valid format</li>
+        <li>Remove any special characters or extra commas</li>
+        <li>Try importing a smaller batch first</li>
+      </ul>
+
+      <h3>Getting Help</h3>
+      <p>If you need additional assistance:</p>
+      <ul>
+        <li>Check the <a href="#getting-started">Getting Started</a> section</li>
+        <li>Review your campaign and account logs in the dashboard</li>
+        <li>Check AWS SES console for detailed error messages</li>
+        <% if user_signed_in? %>
+          <li>Contact support from your dashboard</li>
+        <% else %>
+          <li><a href="<%= new_user_session_path %>">Sign in</a> to contact support</li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; <%= Time.current.year %> FuegoMail. <%= link_to "Back to Home", root_path %></p>
+  </div>
+</body>
+</html>

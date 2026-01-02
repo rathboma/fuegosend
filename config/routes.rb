@@ -124,5 +124,6 @@ Rails.application.routes.draw do
   end
 
   # Defines the root path route ("/")
-  root to: redirect("/users/sign_in")
+  # Unauthenticated users see marketing page, authenticated users see dashboard
+  root to: "high_voltage/pages#show", id: "home"
 end
