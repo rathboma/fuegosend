@@ -4,35 +4,88 @@ This is a prioritized list of features, fixes, and improvements for FuegoMail.
 
 ## 🔴 Critical Bugs (Fix Immediately)
 
-These will cause runtime errors in production:
+~~All critical bugs have been fixed!~~ ✅
 
-- [ ] **Add `Account#paused?` method** (app/models/account.rb)
-  - Method is called in `can_send_email?` but not defined
-  - Schema has `paused_at` column - needs scope/method to check it
-  - Location: Used in line 62 of account.rb
+- [x] **Add `Account#paused?` method** - COMPLETED
+- [x] **Implement `Campaign#apply_merge_tags` method** - COMPLETED
+- [x] **Fix unsubscribe URL generation** - COMPLETED
+- [x] **Implement API authentication** - Already implemented
+- [x] **Create notification mailer methods** - COMPLETED
 
-- [ ] **Implement `Campaign#apply_merge_tags` method** (app/models/campaign.rb)
-  - Called in `Ses::EmailSender.prepare_text_body` (line 101)
-  - Will cause NoMethodError when preparing plain text emails
-  - Should apply Mustache rendering to text content
+## 📄 Marketing & Documentation Sites (High Priority)
 
-- [ ] **Fix unsubscribe URL generation** (app/models/campaign.rb, app/models/template.rb)
-  - Currently returns placeholder `"#unsubscribe"` in mustache data
-  - Real URL generation logic exists but not integrated
-  - Unsubscribe flow won't work without this
+Add static marketing and documentation pages using the `high_voltage` gem before launching.
 
-- [ ] **Implement API authentication** (app/controllers/api/v1/base_controller.rb)
-  - `ApiAuthenticable` module referenced but doesn't exist
-  - All API endpoints will fail without this
-  - Need bearer token validation from ApiKey model
+### Setup High Voltage
 
-- [ ] **Create notification mailer methods** (app/mailers/)
-  - Campaign model has 4 stub methods (lines 252-267):
-    - `notify_sending_started!`
-    - `notify_sending_completed!`
-    - `notify_sending_failed!`
-    - `notify_quota_exceeded!`
-  - All marked "will implement with mailer" but are empty
+- [ ] **Add high_voltage gem to Gemfile**
+  - Add `gem 'high_voltage', '~> 5.0.0'`
+  - Run `bundle install`
+  - Create initializer if custom configuration needed
+
+- [ ] **Configure High Voltage routes**
+  - Decide on routing strategy (keep /pages or use root-level routes)
+  - Configure `config/initializers/high_voltage.rb` if needed
+  - Disable default routes if using custom PagesController
+
+### Marketing Site (1 page)
+
+- [ ] **Create marketing landing page**
+  - File: `app/views/pages/home.html.erb` (or `marketing.html.erb`)
+  - Sections:
+    - Hero section with value proposition
+    - Key features overview (list management, campaigns, tracking, analytics)
+    - Pricing tiers (Free, Starter, Pro, Agency)
+    - Call-to-action (Sign up button)
+    - Footer with links
+  - Use responsive design (Bootstrap already included)
+  - Include meta tags for SEO
+
+- [ ] **Configure root route to marketing page**
+  - Update `config/routes.rb` to serve marketing page at `/`
+  - Current root redirects to sign-in - change for public marketing
+  - Consider authenticated vs non-authenticated root routes
+
+### Documentation Site (1 page)
+
+- [ ] **Create documentation page**
+  - File: `app/views/pages/docs.html.erb`
+  - Sections:
+    - Getting Started
+    - Setting up AWS SES
+    - Creating campaigns
+    - Managing subscribers
+    - Using merge tags
+    - API documentation (link to detailed API docs)
+    - Troubleshooting
+  - Include code examples
+  - Link from marketing page footer
+
+- [ ] **Add documentation navigation**
+  - Create links in application layout or footer
+  - Add "Docs" link to marketing page
+  - Add "Back to app" link for authenticated users
+
+### Optional Enhancements
+
+- [ ] **Add additional static pages**
+  - About page (`app/views/pages/about.html.erb`)
+  - Pricing page (`app/views/pages/pricing.html.erb`)
+  - Terms of Service (`app/views/pages/terms.html.erb`)
+  - Privacy Policy (`app/views/pages/privacy.html.erb`)
+
+- [ ] **Custom PagesController for authentication**
+  - Override default controller if some pages need auth
+  - Set different layouts for marketing vs docs pages
+  - Add before_action filters as needed
+
+### Notes
+
+- High Voltage serves static pages from `app/views/pages/` by default
+- No database or controller logic needed for simple pages
+- Use `<%= link_to 'About', page_path('about') %>` to link between pages
+- Can nest pages in directories: `page_path('about/team')`
+- Use `content_for` for page-specific titles and meta tags
 
 ## 🔥 Automated Risk Management System (High Priority)
 
@@ -332,21 +385,28 @@ Technical debt and optimizations:
 
 Based on priorities, the recommended order of work is:
 
-1. **Fix all 🔴 Critical Bugs first** (will prevent runtime errors)
-   - These are blockers that will cause immediate failures
+1. ✅ **Fix all 🔴 Critical Bugs first** - COMPLETED
+   - All 5 critical bugs have been fixed
 
-2. **Implement 🔥 Automated Risk Management System** (production requirement)
+2. **Add 📄 Marketing & Documentation Sites** (pre-launch requirement)
+   - Set up high_voltage gem
+   - Create 1-page marketing landing page
+   - Create 1-page documentation site
+   - Configure routing for public vs authenticated users
+   - Essential for launch - users need to understand the product
+
+3. **Implement 🔥 Automated Risk Management System** (production requirement)
    - Essential for preventing abuse and protecting sender reputation
    - Enables Free plan with appropriate safeguards
    - Should be done before scaling to multiple users
 
-3. **Complete 🟠 High Priority items** (needed for production)
-   - Foundation features like API auth, notifications, suppression lists
+4. **Complete 🟠 High Priority items** (needed for production)
+   - Foundation features like suppression lists, segment refresh, etc.
 
-4. **Add 🟡 Medium Priority features** (better user experience)
+5. **Add 🟡 Medium Priority features** (better user experience)
    - Multi-user teams, analytics, batch operations
 
-5. **Consider 🟢 Low Priority** when core is stable
+6. **Consider 🟢 Low Priority** when core is stable
    - Advanced features for mature product
 
 ### Implementation Strategy for Risk Management
