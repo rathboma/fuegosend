@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 5px 5px; }
+    .button { display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Campaign Started</h1>
+  </div>
+
+  <div class="content">
+    <p>Hi <%= @user.email %>,</p>
+
+    <p>Your campaign <strong>"<%= @campaign.name %>"</strong> is now sending!</p>
+
+    <p><strong>Campaign Details:</strong></p>
+    <ul>
+      <li>Subject: <%= @campaign.subject %></li>
+      <li>Recipients: <%= @campaign.total_recipients %></li>
+      <li>From: <%= @campaign.from_name %> &lt;<%= @campaign.from_email %>&gt;</li>
+    </ul>
+
+    <p>You'll receive another email when the campaign completes.</p>
+
+    <p style="text-align: center;">
+      <a href="<%= campaign_url(@campaign) %>" class="button">View Campaign Stats</a>
+    </p>
+
+    <p>Thanks,<br>
+    The FuegoMail Team</p>
+  </div>
+
+  <div class="footer">
+    <p>&copy; <%= Time.current.year %> <%= @account.name %> | Powered by FuegoMail</p>
+  </div>
+</body>
+</html>

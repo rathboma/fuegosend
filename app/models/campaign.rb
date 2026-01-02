@@ -276,22 +276,29 @@ class Campaign < ApplicationRecord
     Mustache.render(text, data)
   end
 
-  # Notification methods (placeholders for now - will implement with mailer)
+  # Notification methods - send to account owners and admins
   def notify_sending_started!
-    # Account owners and admins will be notified
-    # CampaignMailer.sending_started(self, user).deliver_later
+    account.users.where(role: %w[owner admin]).find_each do |user|
+      CampaignMailer.sending_started(self, user).deliver_later
+    end
   end
 
   def notify_sending_completed!
-    # CampaignMailer.sending_completed(self, user).deliver_later
+    account.users.where(role: %w[owner admin]).find_each do |user|
+      CampaignMailer.sending_completed(self, user).deliver_later
+    end
   end
 
   def notify_sending_failed!(error_details)
-    # CampaignMailer.sending_failed(self, user, error_details).deliver_later
+    account.users.where(role: %w[owner admin]).find_each do |user|
+      CampaignMailer.sending_failed(self, user, error_details).deliver_later
+    end
   end
 
   def notify_quota_exceeded!
-    # CampaignMailer.quota_exceeded(self, user).deliver_later
+    account.users.where(role: %w[owner admin]).find_each do |user|
+      CampaignMailer.quota_exceeded(self, user).deliver_later
+    end
   end
 
   def set_default_emails

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #2196F3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 5px 5px; }
+    .stats { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; }
+    .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .stat-label { font-weight: bold; }
+    .button { display: inline-block; padding: 12px 24px; background: #2196F3; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Campaign Completed!</h1>
+  </div>
+
+  <div class="content">
+    <p>Hi <%= @user.email %>,</p>
+
+    <p>Your campaign <strong>"<%= @campaign.name %>"</strong> has completed sending!</p>
+
+    <div class="stats">
+      <h3>Campaign Results:</h3>
+      <div class="stat-row">
+        <span class="stat-label">Total Recipients:</span>
+        <span><%= number_with_delimiter(@stats[:total_recipients]) %></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Emails Sent:</span>
+        <span><%= number_with_delimiter(@stats[:sent_count]) %></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Delivered:</span>
+        <span><%= number_with_delimiter(@stats[:delivered_count]) %></span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Opened:</span>
+        <span><%= number_with_delimiter(@stats[:opened_count]) %> (<%= number_to_percentage(@stats[:open_rate], precision: 1) %>)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Clicked:</span>
+        <span><%= number_with_delimiter(@stats[:clicked_count]) %> (<%= number_to_percentage(@stats[:click_rate], precision: 1) %>)</span>
+      </div>
+    </div>
+
+    <p style="text-align: center;">
+      <a href="<%= stats_campaign_url(@campaign) %>" class="button">View Detailed Stats</a>
+    </p>
+
+    <p>Thanks,<br>
+    The FuegoMail Team</p>
+  </div>
+
+  <div class="footer">
+    <p>&copy; <%= Time.current.year %> <%= @account.name %> | Powered by FuegoMail</p>
+  </div>
+</body>
+</html>

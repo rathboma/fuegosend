@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #FF9800; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+    .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; border-radius: 0 0 5px 5px; }
+    .alert { background: #fff3e0; border-left: 4px solid #FF9800; padding: 15px; margin: 20px 0; }
+    .quota-info { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; }
+    .quota-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+    .quota-label { font-weight: bold; }
+    .button { display: inline-block; padding: 12px 24px; background: #FF9800; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>SES Quota Exceeded</h1>
+  </div>
+
+  <div class="content">
+    <p>Hi <%= @user.email %>,</p>
+
+    <p>Your campaign <strong>"<%= @campaign.name %>"</strong> has been paused because your AWS SES sending quota has been exceeded.</p>
+
+    <div class="alert">
+      <p><strong>What this means:</strong></p>
+      <p>Your AWS account has a daily sending limit. Once you reach this limit, you cannot send any more emails until the quota resets in 24 hours.</p>
+    </div>
+
+    <div class="quota-info">
+      <h3>Current Quota Status:</h3>
+      <div class="quota-row">
+        <span class="quota-label">Emails Sent (24h):</span>
+        <span><%= number_with_delimiter(@quota_info[:sent_last_24_hours]) %></span>
+      </div>
+      <div class="quota-row">
+        <span class="quota-label">Daily Limit:</span>
+        <span><%= number_with_delimiter(@quota_info[:max_24_hour_send]) %></span>
+      </div>
+      <div class="quota-row">
+        <span class="quota-label">Quota Used:</span>
+        <span><%= number_to_percentage(@quota_info[:quota_percent], precision: 1) %></span>
+      </div>
+      <% if @quota_info[:reset_at] %>
+      <div class="quota-row">
+        <span class="quota-label">Resets At:</span>
+        <span><%= @quota_info[:reset_at].strftime("%B %d, %Y at %I:%M %p %Z") %></span>
+      </div>
+      <% end %>
+    </div>
+
+    <p><strong>Next Steps:</strong></p>
+    <ul>
+      <li>Your campaign will automatically resume when your quota resets</li>
+      <li>You can request a quota increase from AWS if you need to send more emails</li>
+      <li><a href="https://docs.aws.amazon.com/ses/latest/dg/manage-sending-quotas.html" target="_blank">Learn more about SES quotas</a></li>
+    </ul>
+
+    <p style="text-align: center;">
+      <a href="<%= campaign_url(@campaign) %>" class="button">View Campaign Status</a>
+    </p>
+
+    <p>Thanks,<br>
+    The FuegoMail Team</p>
+  </div>
+
+  <div class="footer">
+    <p>&copy; <%= Time.current.year %> <%= @account.name %> | Powered by FuegoMail</p>
+  </div>
+</body>
+</html>
