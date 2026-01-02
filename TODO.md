@@ -34,6 +34,132 @@ These will cause runtime errors in production:
     - `notify_quota_exceeded!`
   - All marked "will implement with mailer" but are empty
 
+## 🔥 Automated Risk Management System (High Priority)
+
+**Goal:** Implement self-managed anti-abuse system that isolates risk and automates spam detection without manual oversight. See `risk-management-todo.md` for full requirements.
+
+### Domain Segmentation (Reputation Isolation)
+
+- [ ] **Add `plan` field to Account model**
+  - Migration: Add enum field with values: `free`, `starter`, `pro`, `agency`
+  - Add plan-based feature gating methods
+  - Set default plan for new accounts
+
+- [ ] **Add tracking domain configuration to accounts**
+  - Migration: Add `tracking_domain` field to accounts
+  - Create domain tier assignment logic:
+    - Tier 1 (Disposable): Pool of domains for Free plan (e.g., `links-cluster-a.com`)
+    - Tier 2 (Premium): Single domain for Paid plans (e.g., `track.fuegomail.com`)
+    - Tier 3 (Custom): CNAME support for Agency plan (e.g., `links.brand.com`)
+  - Update URL generation in tracking controller and email sender
+
+- [ ] **Configure web server for multi-domain tracking**
+  - Update Nginx/web server config to accept all tracking domains
+  - Add domain routing logic in Rails
+  - Test click/open tracking across all domain tiers
+
+### Campaign State Machine for Risk Management
+
+- [ ] **Extend Campaign status enum with new states**
+  - Add states: `queued_for_review`, `canary_processing`, `approved`, `suspended`
+  - Update campaign state machine transitions
+  - Add migration to update existing campaigns
+
+- [ ] **Implement Sandbox workflow (Free Plan only)**
+  - Phase A: 30-minute cool-down delay after "Send" clicked
+    - Add `queued_at` timestamp to campaigns
+    - Create background job to check timer and advance state
+  - Phase B: Canary sample (for lists > 500)
+    - Select random 100 contacts for canary batch
+    - Send only canary batch, transition to `canary_processing`
+    - Start 30-minute analysis timer
+  - Phase C: Analysis & decision logic
+    - Check bounce/complaint rates from SES webhooks for canary batch
+    - Thresholds: >5% hard bounces OR >1% complaints = FAIL
+    - FAIL: Set status to `suspended`, trigger alert
+    - PASS: Set status to `approved`, send remaining emails
+  - Add `canary_send_ids` JSON field to track canary batch
+
+- [ ] **Implement Emergency Kill-Switch (All Plans)**
+  - Real-time monitoring during send
+  - Check cumulative stats: >10 hard bounces OR >2 complaints
+  - Immediately stop campaign and set to `suspended`
+  - Applies to all users (Free & Paid) during entire send process
+
+- [ ] **Add plan-based workflow routing**
+  - Free plan: Goes through Sandbox & Canary workflow
+  - Paid plans: Bypass sandbox, go straight to `approved`/sending
+  - Add specs/tests for both paths
+
+### Free Plan User Constraints
+
+- [ ] **Limit Free users to 1 list/segment**
+  - Add validation in List and Segment models
+  - Check account plan before allowing creation
+  - Show upgrade prompt in UI when limit reached
+
+- [ ] **Add import throttling for Free plan**
+  - Add `pending_validation` state to subscribers
+  - New imports stay in `pending_validation` for 30 minutes
+  - Background job transitions to `active` after timer
+  - Prevent campaigns from using `pending_validation` subscribers
+
+- [ ] **Add UI indicators for Free plan restrictions**
+  - Show "1/1 lists used" counter
+  - Show validation timer on imported contacts
+  - Add upgrade prompts in appropriate places
+
+### Risk Management UI & Messaging
+
+- [ ] **Update campaign status UI with new states**
+  - `queued_for_review`: Display "Status: Queued for Delivery"
+  - `canary_processing`: Display "Status: Sending & Verifying"
+  - `suspended`: Display suspension reason and recovery steps
+  - Add tooltips with positive messaging (avoid "delayed", "hold", "probation")
+
+- [ ] **Create suspended campaign recovery flow**
+  - Show bounce/complaint statistics that triggered suspension
+  - Recommend list cleaning tools
+  - Allow manual resume after review (admin only initially)
+  - Log suspension events for audit
+
+- [ ] **Add knowledge base content**
+  - Article: "Why is my campaign status 'Queued'?" (Smart Queuing Algorithm)
+  - Article: "How tracking links affect delivery" (domain tiers)
+  - Article: "Why was my campaign paused?" (bounce rate protection)
+  - FAQ: Upgrade to bypass delays, explain Free plan process
+
+### Risk Management Background Jobs
+
+- [ ] **Create `RiskManagement::ProcessQueuedCampaignJob`**
+  - Runs every minute to check `queued_for_review` campaigns
+  - Advances campaigns past 30-minute cooldown to canary phase
+  - Free plan only
+
+- [ ] **Create `RiskManagement::AnalyzeCanaryCampaignJob`**
+  - Runs every minute to check `canary_processing` campaigns
+  - Analyzes bounce/complaint rates after 30-minute analysis timer
+  - Makes PASS/FAIL decision and advances state
+
+- [ ] **Create `RiskManagement::MonitorActiveCampaignsJob`**
+  - Runs every 30 seconds
+  - Checks all `sending` campaigns for kill-switch thresholds
+  - Suspends campaigns that exceed bounce/complaint limits
+  - Applies to all plans
+
+- [ ] **Create `RiskManagement::ActivatePendingSubscribersJob`**
+  - Runs every 5 minutes
+  - Transitions subscribers from `pending_validation` to `active`
+  - Only for Free plan imports
+
+### Dependencies & Notes
+
+- Requires: `Account#paused?` method fixed (Critical Bug)
+- Requires: Bounce/complaint webhook tracking working correctly
+- Requires: Campaign statistics accurate and real-time
+- Consider: Add admin dashboard to view suspended campaigns across all accounts
+- Consider: Add alerts/notifications when campaigns are suspended
+
 ## 🟠 High Priority (Complete Core Features)
 
 Features needed for basic production use:
@@ -206,12 +332,60 @@ Technical debt and optimizations:
 
 Based on priorities, the recommended order of work is:
 
-1. Fix all 🔴 Critical Bugs first (will prevent runtime errors)
-2. Complete 🟠 High Priority items (needed for production)
-3. Add 🟡 Medium Priority features (better user experience)
-4. Consider 🟢 Low Priority when core is stable
+1. **Fix all 🔴 Critical Bugs first** (will prevent runtime errors)
+   - These are blockers that will cause immediate failures
+
+2. **Implement 🔥 Automated Risk Management System** (production requirement)
+   - Essential for preventing abuse and protecting sender reputation
+   - Enables Free plan with appropriate safeguards
+   - Should be done before scaling to multiple users
+
+3. **Complete 🟠 High Priority items** (needed for production)
+   - Foundation features like API auth, notifications, suppression lists
+
+4. **Add 🟡 Medium Priority features** (better user experience)
+   - Multi-user teams, analytics, batch operations
+
+5. **Consider 🟢 Low Priority** when core is stable
+   - Advanced features for mature product
+
+### Implementation Strategy for Risk Management
+
+The risk management system should be implemented in this order:
+
+1. **Phase 1: Foundation**
+   - Add `plan` field to accounts
+   - Extend campaign status enum
+   - Add required timestamps and tracking fields
+
+2. **Phase 2: Domain Segmentation**
+   - Configure tracking domain tiers
+   - Update URL generation logic
+   - Test multi-domain tracking
+
+3. **Phase 3: Sandbox Workflow**
+   - Implement 30-minute cooldown
+   - Implement canary sampling logic
+   - Build analysis & decision engine
+   - Add background jobs for automation
+
+4. **Phase 4: Kill-Switch**
+   - Real-time monitoring job
+   - Emergency suspension logic
+   - Alert system
+
+5. **Phase 5: Free Plan Constraints**
+   - List/segment limits
+   - Import throttling
+   - UI updates and upgrade prompts
+
+6. **Phase 6: Documentation**
+   - Update UI messaging
+   - Create knowledge base articles
+   - Add FAQ content
 
 ---
 
 Last Updated: 2026-01-02
-Status: ~70% feature complete
+Status: ~60% feature complete (updated to reflect new risk management scope)
+Dependencies: See `risk-management-todo.md` for detailed requirements
