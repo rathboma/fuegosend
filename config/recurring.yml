@@ -19,5 +19,11 @@ monitor_active_campaigns:
   schedule: "*/1 * * * *" # Every minute
   queue: default
 
+# Refresh stale segment counts (counts older than 1 hour)
+refresh_segment_counts:
+  class: RefreshSegmentCountsJob
+  schedule: "*/15 * * * *" # Every 15 minutes
+  queue: default
+
 # Note: For more frequent monitoring, these jobs run efficiently
-# and only process campaigns in the relevant states
+# and only process campaigns/segments in the relevant states
