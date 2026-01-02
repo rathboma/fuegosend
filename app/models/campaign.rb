@@ -192,9 +192,9 @@ class Campaign < ApplicationRecord
   end
 
   # Personalized body for a subscriber (using Mustache)
-  def personalized_body_for(subscriber)
+  def personalized_body_for(subscriber, campaign_send = nil)
     content = markdown_to_html(body_markdown)
-    data = build_mustache_data(subscriber)
+    data = build_mustache_data(subscriber, campaign_send)
 
     # Render content using Mustache
     Mustache.render(content, data)
@@ -211,8 +211,8 @@ class Campaign < ApplicationRecord
     Kramdown::Document.new(markdown).to_html
   end
 
-  def build_mustache_data(subscriber)
-    {
+  def build_mustache_data(subscriber, campaign_send = nil)
+    data = {
       # Subscriber data
       email: subscriber.email,
       subscriber_email: subscriber.email,
@@ -232,12 +232,32 @@ class Campaign < ApplicationRecord
       account_name: account.name,
       logo_url: account.brand_logo.presence || "/logo-placeholder.png",
 
-      # URLs
-      unsubscribe_url: "#unsubscribe",
+      # URLs - generate real URL if campaign_send is provided
+      unsubscribe_url: unsubscribe_url_for(campaign_send),
 
       # Other
       current_year: Time.current.year
     }.merge(flatten_custom_attributes(subscriber))
+  end
+
+  # Generate unsubscribe URL for a specific campaign send
+  def unsubscribe_url_for(campaign_send)
+    return "#unsubscribe" unless campaign_send
+
+    # Generate tracking token for this campaign_send
+    verifier = Rails.application.message_verifier(:campaign_tracking)
+    token = verifier.generate(campaign_send.id)
+
+    # Build URL with configured host
+    host = Rails.application.config.action_mailer.default_url_options[:host] || 'localhost'
+    port = Rails.application.config.action_mailer.default_url_options[:port]
+    protocol = Rails.env.production? ? 'https' : 'http'
+
+    url = "#{protocol}://#{host}"
+    url += ":#{port}" if port && !Rails.env.production?
+    url += "/unsubscribe/#{token}"
+
+    url
   end
 
   # Flatten custom attributes for Mustache access
@@ -246,6 +266,14 @@ class Campaign < ApplicationRecord
     return {} unless subscriber.custom_attributes.is_a?(Hash)
 
     subscriber.custom_attributes.transform_keys { |key| "custom_#{key}".to_sym }
+  end
+
+  # Apply merge tags to arbitrary text content
+  def apply_merge_tags(text, subscriber, campaign_send = nil)
+    return text if text.blank?
+
+    data = build_mustache_data(subscriber, campaign_send)
+    Mustache.render(text, data)
   end
 
   # Notification methods (placeholders for now - will implement with mailer)

@@ -57,6 +57,21 @@ class Account < ApplicationRecord
     end
   end
 
+  # Check if account is paused
+  def paused?
+    paused_at.present?
+  end
+
+  # Pause the account
+  def pause!
+    update!(paused_at: Time.current)
+  end
+
+  # Unpause the account
+  def unpause!
+    update!(paused_at: nil)
+  end
+
   # Check if account can send emails
   def can_send_email?
     active? && !paused? && !ses_quota_exceeded?

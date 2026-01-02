@@ -73,8 +73,8 @@ module Ses
     private
 
     def prepare_html_body
-      # Get personalized body from campaign
-      body = campaign.personalized_body_for(subscriber)
+      # Get personalized body from campaign with campaign_send for proper unsubscribe URLs
+      body = campaign.personalized_body_for(subscriber, campaign_send)
 
       # Replace links with tracking URLs
       body = inject_link_tracking(body)
@@ -97,8 +97,8 @@ module Ses
         text = ""
       end
 
-      # Apply merge tags to text version
-      text = campaign.send(:apply_merge_tags, text, subscriber)
+      # Apply merge tags to text version with campaign_send for proper unsubscribe URLs
+      text = campaign.send(:apply_merge_tags, text, subscriber, campaign_send)
 
       # Add unsubscribe link at the bottom
       text += "\n\n---\nUnsubscribe: #{unsubscribe_url}"
