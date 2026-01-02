@@ -9,7 +9,7 @@ class Campaign < ApplicationRecord
   has_many :subscribers, through: :campaign_sends
 
   validates :name, :subject, :from_name, :from_email, presence: true
-  validates :status, inclusion: { in: %w[draft scheduled sending sent paused cancelled] }
+  validates :status, inclusion: { in: %w[draft scheduled queued_for_review canary_processing approved sending sent paused suspended cancelled] }
 
   # Set default email values from account
   after_initialize :set_default_emails, if: :new_record?

@@ -32,8 +32,7 @@ Rails.application.routes.draw do
 
   # Authenticated web dashboard
   authenticate :user do
-    root to: "dashboard#index", as: :authenticated_root
-    get "dashboard", to: "dashboard#index"
+    get "dashboard", to: "dashboard#index", as: :authenticated_root
 
     # Account setup wizard
     get "setup", to: "setup#show"

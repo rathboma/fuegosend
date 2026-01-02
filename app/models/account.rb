@@ -26,6 +26,14 @@ class Account < ApplicationRecord
     complete: 3
   }, prefix: true
 
+  # Plan tiers for feature gating and risk management
+  enum :plan, {
+    free: 0,
+    starter: 1,
+    pro: 2,
+    agency: 3
+  }, prefix: true
+
   validates :name, presence: true
   validates :subdomain, presence: true, uniqueness: true,
             format: { with: /\A[a-z0-9-]+\z/, message: "only allows lowercase letters, numbers, and hyphens" }
@@ -102,5 +110,69 @@ class Account < ApplicationRecord
       secret_access_key: aws_secret_access_key,
       region: aws_region
     )
+  end
+
+  # Plan-based feature gating
+  # Free plan uses sandbox workflow with delays and canary testing
+  def requires_sandbox_workflow?
+    plan_free?
+  end
+
+  # Free plan limited to 1 list/segment
+  def max_lists
+    plan_free? ? 1 : Float::INFINITY
+  end
+
+  def max_segments
+    plan_free? ? 1 : Float::INFINITY
+  end
+
+  # Free plan has import throttling (30-minute validation delay)
+  def requires_import_throttling?
+    plan_free?
+  end
+
+  # Check if account can create more lists
+  def can_create_list?
+    lists.count < max_lists
+  end
+
+  # Check if account can create more segments
+  def can_create_segment?
+    segments.count < max_segments
+  end
+
+  # Get subscriber limits by plan
+  def max_subscribers
+    case plan.to_sym
+    when :free then 500
+    when :starter then 5_000
+    when :pro then 25_000
+    when :agency then Float::INFINITY
+    end
+  end
+
+  # Get monthly email limits by plan
+  def max_monthly_emails
+    case plan.to_sym
+    when :free then 2_500
+    when :starter then 25_000
+    when :pro then 125_000
+    when :agency then Float::INFINITY
+    end
+  end
+
+  # Check if account has reached subscriber limit
+  def at_subscriber_limit?
+    subscribers.active.count >= max_subscribers
+  end
+
+  # Tracking domain tier assignment
+  def tracking_domain_tier
+    case plan.to_sym
+    when :free then 1  # Disposable pool
+    when :starter, :pro then 2  # Premium shared domain
+    when :agency then 3  # Custom CNAME support
+    end
   end
 end
