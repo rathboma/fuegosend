@@ -58,14 +58,73 @@ class TemplatesController < ApplicationController
     html_content = params[:content] || @template.html_content || ""
 
     begin
-      # Create sample data for merge tags
+      # Create sample data for merge tags with rich content
+      sample_markdown = <<~MARKDOWN
+        # Welcome to Our Newsletter
+
+        Hi {{first_name}},
+
+        We're excited to share this month's updates with you!
+
+        ## Featured Stories
+
+        ### Story 1: New Product Launch
+        We're thrilled to announce our latest product. Here's what makes it special:
+
+        - **Easy to use** - Intuitive interface designed for everyone
+        - **Fast performance** - Lightning-quick response times
+        - **Secure** - Enterprise-grade security built-in
+        - **Affordable** - Pricing that fits any budget
+
+        ![Product Hero Image](https://placehold.co/600x300/4CAF50/white?text=Product+Launch)
+
+        ### Story 2: Customer Success
+
+        See how our customers are achieving amazing results:
+
+        1. Increased productivity by 50%
+        2. Reduced costs by 30%
+        3. Improved customer satisfaction scores
+        4. Scaled to handle 10x more users
+
+        ![Customer Success Graph](https://placehold.co/600x250/2196F3/white?text=Success+Metrics)
+
+        ## Quick Tips
+
+        #### Tip #1: Get Started Fast
+        Follow our quick-start guide to be up and running in minutes.
+
+        #### Tip #2: Use Templates
+        Save time with our pre-built templates.
+
+        #### Tip #3: Automate Everything
+        Set up workflows to automate repetitive tasks.
+
+        ![Tips Illustration](https://placehold.co/600x200/FF9800/white?text=Pro+Tips)
+
+        ## What's Next?
+
+        - **Webinar** - Join us next Tuesday for a live demo
+        - **Blog** - Check out our latest articles
+        - **Support** - Our team is here to help 24/7
+
+        ---
+
+        Thanks for being part of our community!
+
+        Best regards,
+        The {{account_name}} Team
+
+        [Unsubscribe]({{unsubscribe_url}})
+      MARKDOWN
+
       sample_campaign = OpenStruct.new(
         name: "Sample Campaign",
         subject: "Sample Subject",
         from_name: "Sample Sender",
         from_email: "sender@example.com",
         account: current_account,
-        body_markdown: "# Hello World\n\nThis is sample content for the preview."
+        body_markdown: sample_markdown
       )
 
       sample_subscriber = Subscriber.new(
