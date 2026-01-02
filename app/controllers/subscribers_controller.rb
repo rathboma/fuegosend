@@ -212,6 +212,26 @@ class SubscribersController < ApplicationController
     end
   end
 
+  # GET /subscribers/suppressed
+  def suppressed
+    @suppressed_subscribers = current_account.subscribers.suppressed.order(created_at: :desc)
+
+    # Paginate (50 per page for suppression list)
+    @suppressed_subscribers = @suppressed_subscribers.limit(50).offset((params[:page].to_i - 1) * 50)
+    @total_count = current_account.subscribers.suppressed.count
+  end
+
+  # POST /subscribers/:id/reactivate
+  def reactivate
+    @subscriber = current_account.subscribers.find(params[:id])
+
+    if @subscriber.reactivate!
+      redirect_to @subscriber, notice: "Subscriber was successfully reactivated."
+    else
+      redirect_to @subscriber, alert: "Failed to reactivate subscriber."
+    end
+  end
+
   private
 
   def set_subscriber

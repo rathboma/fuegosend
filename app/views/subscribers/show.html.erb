@@ -11,6 +11,11 @@
       <span class="badge status-<%= @subscriber.status %> mt-2"><%= @subscriber.status.titleize %></span>
     </div>
     <div class="d-flex gap-2">
+      <% if @subscriber.suppressed? %>
+        <%= button_to "Reactivate", reactivate_subscriber_path(@subscriber), method: :post,
+            class: "btn btn-success",
+            data: { turbo_confirm: "Reactivate #{@subscriber.email}? They will be able to receive campaigns again." } %>
+      <% end %>
       <%= link_to "Edit", edit_subscriber_path(@subscriber), class: "btn btn-outline-secondary" %>
       <%= button_to "Delete", @subscriber, method: :delete, data: { turbo_confirm: "Are you sure you want to delete this subscriber?" }, class: "btn btn-outline-danger" %>
     </div>
@@ -53,6 +58,12 @@
               <div class="col-12">
                 <div class="text-muted small mb-1">Bounced</div>
                 <div class="fw-semibold"><%= @subscriber.bounced_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+              </div>
+            <% end %>
+            <% if @subscriber.complained_at.present? %>
+              <div class="col-12">
+                <div class="text-muted small mb-1">Complained</div>
+                <div class="fw-semibold"><%= @subscriber.complained_at.strftime("%B %d, %Y at %I:%M %p") %></div>
               </div>
             <% end %>
           </div>

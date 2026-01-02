@@ -14,6 +14,7 @@ class Subscriber < ApplicationRecord
   scope :unsubscribed, -> { where(status: "unsubscribed") }
   scope :bounced, -> { where(status: "bounced") }
   scope :complained, -> { where(status: "complained") }
+  scope :suppressed, -> { where(status: ["bounced", "complained"]) }
 
   # Query by custom attributes (SQLite JSON support)
   scope :with_attribute, ->(key, value) {
@@ -39,6 +40,21 @@ class Subscriber < ApplicationRecord
   # Mark as complained
   def mark_complained!
     update!(status: "complained", complained_at: Time.current)
+  end
+
+  # Reactivate a suppressed subscriber (manual override)
+  def reactivate!
+    update!(
+      status: "active",
+      bounced_at: nil,
+      complained_at: nil,
+      unsubscribed_at: nil
+    )
+  end
+
+  # Check if subscriber is suppressed (bounced or complained)
+  def suppressed?
+    %w[bounced complained].include?(status)
   end
 
   # Get custom attribute value

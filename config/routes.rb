@@ -46,6 +46,10 @@ Rails.application.routes.draw do
       collection do
         get :import
         post :import_csv
+        get :suppressed
+      end
+      member do
+        post :reactivate
       end
     end
     resources :segments
