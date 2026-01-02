@@ -59,6 +59,10 @@
             <div class="text-muted small mb-1">Secret Access Key</div>
             <div class="fw-semibold"><%= @account.aws_secret_access_key.present? ? '****' : 'Not configured' %></div>
           </div>
+          <div class="col-md-6">
+            <div class="text-muted small mb-1">Configuration Set Name</div>
+            <div class="fw-semibold"><%= @account.ses_configuration_set_name.present? ? @account.ses_configuration_set_name : 'Not configured' %></div>
+          </div>
         </div>
       </div>
     </div>

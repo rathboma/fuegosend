@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_02_212433) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_02_220203) do
   create_table "accounts", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "aws_access_key_id"
@@ -23,6 +23,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_212433) do
     t.string "name", null: false
     t.datetime "paused_at"
     t.integer "plan", default: 0, null: false
+    t.string "ses_configuration_set_name"
     t.integer "ses_max_24_hour_send", default: 200
     t.integer "ses_max_send_rate", default: 1
     t.datetime "ses_quota_reset_at"

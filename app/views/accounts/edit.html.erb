@@ -87,10 +87,16 @@
           <small class="text-muted">Your AWS IAM user access key</small>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-3">
           <%= f.label :aws_secret_access_key, "AWS Secret Access Key", class: "form-label" %>
           <%= f.password_field :aws_secret_access_key, class: "form-control", placeholder: "Leave blank to keep current" %>
           <small class="text-muted">Your AWS IAM user secret key (encrypted at rest)</small>
+        </div>
+
+        <div class="mb-4">
+          <%= f.label :ses_configuration_set_name, "SES Configuration Set Name", class: "form-label" %>
+          <%= f.text_field :ses_configuration_set_name, class: "form-control", placeholder: "Optional" %>
+          <small class="text-muted">Optional: Specify an SES Configuration Set for advanced tracking and event management</small>
         </div>
 
         <div class="d-flex gap-2">

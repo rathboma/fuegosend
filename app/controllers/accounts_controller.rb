@@ -48,9 +48,11 @@ class AccountsController < ApplicationController
       :name,
       :subdomain,
       :brand_logo,
+      :logo,
       :aws_access_key_id,
       :aws_secret_access_key,
-      :aws_region
+      :aws_region,
+      :ses_configuration_set_name
     )
   end
 

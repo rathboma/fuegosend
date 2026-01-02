@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Send with Fuego | The Fixed-Cost Email Platform for Amazon SES</title>
+  <title>Send with Fuego | The Fixed-Cost Email Marketing Interface for Amazon SES</title>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
@@ -18,6 +18,7 @@
       --bg-light: #FFFBF7;
       --text-main: #1E293B;
       --text-muted: #64748B;
+      --border: #E2E8F0;
       --gradient: linear-gradient(135deg, #FF4D00 0%, #FF8C00 100%);
     }
 
@@ -28,21 +29,21 @@
       line-height: 1.6;
       color: var(--text-main);
       background-color: white;
+      scroll-behavior: smooth;
     }
 
     .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-    /* Header / Hero */
+    /* Hero Section */
     .hero {
       background: var(--secondary);
       color: white;
       padding: 120px 0 140px;
       text-align: center;
-      position: relative;
     }
 
     .hero h1 {
-      font-size: 4rem;
+      font-size: 4.2rem;
       margin-bottom: 24px;
       font-weight: 800;
       letter-spacing: -2px;
@@ -56,7 +57,7 @@
 
     .hero .tagline {
       font-size: 1.4rem;
-      max-width: 800px;
+      max-width: 850px;
       margin: 0 auto 48px;
       color: #CBD5E1;
       font-weight: 400;
@@ -68,35 +69,22 @@
       font-weight: 700;
       font-size: 1.1rem;
       text-decoration: none;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-block;
+      cursor: pointer;
     }
 
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
+    .btn-primary { background: var(--primary); color: white; border: none; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255, 77, 0, 0.3); background: var(--accent); }
+    .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.2); margin-left: 15px; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: white; }
 
-    .btn-primary:hover {
-      background: var(--accent);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(255, 77, 0, 0.3);
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.05);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.2);
-      margin-left: 15px;
-    }
-
-    /* Comparison Section: The Subscriber Tax */
+    /* Comparison Section */
     .comparison-section { padding: 100px 0; background: var(--bg-light); }
-    
     .section-title { text-align: center; margin-bottom: 60px; }
-    .section-title h2 { font-size: 2.8rem; font-weight: 800; margin-bottom: 15px; }
-    .section-title p { color: var(--text-muted); font-size: 1.2rem; }
-
+    .section-title h2 { font-size: 2.8rem; font-weight: 800; margin-bottom: 15px; letter-spacing: -1px; }
+    .section-title p { font-size: 1.2rem; color: var(--text-muted); }
+    
     .comparison-card {
       max-width: 950px;
       margin: 0 auto;
@@ -105,98 +93,54 @@
       box-shadow: 0 20px 50px rgba(0,0,0,0.05);
       display: flex;
       overflow: hidden;
-      border: 1px solid #E2E8F0;
+      border: 1px solid var(--border);
     }
 
     .comp-box { padding: 50px; flex: 1; }
     .comp-bad { background: #FFF5F5; border-right: 1px solid #FEE2E2; }
     .comp-good { background: white; position: relative; }
 
-    .comp-box h4 { 
-      text-transform: uppercase; 
-      letter-spacing: 1.5px; 
-      font-size: 0.85rem; 
-      margin-bottom: 30px; 
-      color: var(--text-muted);
-    }
-
-    .tax-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 15px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .tax-row.final { border-bottom: none; padding-top: 25px; }
-    .tax-row span { font-weight: 500; color: var(--text-main); }
-    
+    .tax-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
     .price-bad { color: #E53E3E; font-weight: 700; }
     .price-fuego { color: var(--primary); font-weight: 800; font-size: 1.2rem; }
 
-    .badge-fixed {
-      position: absolute; top: 20px; right: 20px;
-      background: #FFEDD5; color: #9A3412;
-      padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
-    }
-
-    /* How It Works: The SES Flow */
-    .how-it-works { padding: 100px 0; background: white; }
+    /* Feature Callouts */
+    .feature-callout { padding: 100px 0; }
+    .feature-row { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-bottom: 120px; }
+    .feature-row.reverse { direction: rtl; }
+    .feature-row.reverse .feature-text { direction: ltr; }
     
-    .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 40px;
-      margin-top: 60px;
-    }
-
-    .step-card { text-align: center; }
-    .step-icon {
-      width: 64px; height: 64px; background: var(--bg-light);
-      border-radius: 16px; display: flex; align-items: center;
-      justify-content: center; margin: 0 auto 24px;
-      font-size: 1.5rem; border: 1px solid #FFEDD5;
-    }
-    .step-card h3 { margin-bottom: 12px; font-size: 1.25rem; }
-    .step-card p { color: var(--text-muted); font-size: 0.95rem; }
-
-    /* Features Grid */
-    .feature-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
-      align-items: center; padding: 80px 0;
-    }
-    .feature-content h2 { font-size: 2.5rem; margin-bottom: 20px; line-height: 1.2; }
-    .feature-content p { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 30px; }
+    .feature-text h2 { font-size: 2.5rem; margin-bottom: 24px; font-weight: 800; line-height: 1.1; }
+    .feature-text p { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 30px; }
+    
     .feature-visual {
-      background: var(--bg-light); border-radius: 24px;
-      height: 400px; border: 1px dashed #FFD700;
-      display: flex; align-items: center; justify-content: center;
+      background: white; border-radius: 24px; border: 1px solid var(--border);
+      height: 380px; display: flex; flex-direction: column; padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.03);
     }
 
-    /* Pricing Card Customization */
-    .pricing { padding: 100px 0; background: #F8FAFC; }
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-    }
-    .p-card {
-      background: white; padding: 40px; border-radius: 20px;
-      border: 1px solid #E2E8F0; transition: all 0.3s ease;
-    }
-    .p-card.featured { border: 2px solid var(--primary); transform: scale(1.05); z-index: 2; }
-    .p-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
-    .p-card h3 { font-size: 1.5rem; margin-bottom: 8px; }
-    .p-price { font-size: 3rem; font-weight: 800; margin: 20px 0; color: var(--secondary); }
-    .p-price span { font-size: 1.1rem; color: var(--text-muted); font-weight: 400; }
-    .p-features { list-style: none; margin-bottom: 30px; }
-    .p-features li { margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; }
-    .p-features li::before { content: "✓"; color: var(--primary); font-weight: 800; margin-right: 12px; }
+    .ui-mockup { background: #F8FAFC; border-radius: 12px; flex-grow: 1; border: 1px solid #E2E8F0; padding: 20px; font-family: 'Courier New', monospace; font-size: 0.9rem; color: #64748B; overflow: hidden; }
 
-    .footer { background: var(--secondary); color: white; padding: 80px 0; text-align: center; }
+    /* Pricing Section */
+    .pricing { padding: 100px 0; background: var(--secondary); color: white; }
+    .p-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .p-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 35px; border-radius: 20px; display: flex; flex-direction: column; transition: transform 0.3s ease; }
+    .p-card:hover { transform: translateY(-5px); }
+    .p-card.featured { border: 2px solid var(--primary); background: rgba(255,255,255,0.08); transform: scale(1.05); z-index: 10; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    
+    .p-price { font-size: 2.8rem; font-weight: 800; margin: 20px 0; }
+    .p-price span { font-size: 1rem; opacity: 0.5; font-weight: 400; }
+    .p-features { list-style: none; margin-bottom: 30px; flex-grow: 1; padding-left:0; }
+    .p-features li { margin-bottom: 12px; display: flex; align-items: center; font-size: 0.9rem; }
+    .p-features li::before { content: "🔥"; margin-right: 12px; font-size: 0.8rem; }
 
-    @media (max-width: 768px) {
-      .hero h1 { font-size: 2.5rem; }
-      .comparison-card, .feature-row { flex-direction: column; grid-template-columns: 1fr; }
-      .p-card.featured { transform: scale(1); }
+    .footer { background: #070B14; color: white; padding: 80px 0; text-align: center; }
+
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 3rem; }
+      .feature-row, .feature-row.reverse { grid-template-columns: 1fr; gap: 40px; }
+      .comparison-card { flex-direction: column; }
+      .p-card.featured { transform: scale(1); margin: 20px 0; }
     }
   </style>
 </head>
@@ -204,11 +148,11 @@
 
   <section class="hero">
     <div class="container">
-      <h1>The Email Platform Your <span>Amazon SES</span> Deserves</h1>
-      <p class="tagline">Stop paying a tax on your subscribers. Connect your AWS SES to Fuego and get unlimited contacts, pro analytics, and fixed-cost sending.</p>
+      <h1>Ignite Your <span>Amazon SES</span></h1>
+      <p class="tagline">The high-performance interface for Amazon SES. Unlimited contacts, smart limit monitoring, and fixed-cost pricing that doesn't punish your growth.</p>
       <div class="cta-group">
         <%= link_to "Get Started Free", new_user_registration_path, class: "btn btn-primary" %>
-        <a href="#pricing" class="btn btn-secondary">See Fixed Pricing</a>
+        <a href="#pricing" class="btn btn-secondary">View Fixed Pricing</a>
       </div>
     </div>
   </section>
@@ -217,135 +161,187 @@
     <div class="container">
       <div class="section-title">
         <h2>Kill the "Subscriber Tax"</h2>
-        <p>Traditional platforms charge you more as you succeed. We don't.</p>
+        <p>Traditional platforms charge you more for the same features as you succeed. Fuego stays flat.</p>
       </div>
       
       <div class="comparison-card">
         <div class="comp-box comp-bad">
-          <h4>Traditional ESPs</h4>
-          <div class="tax-row"><span>10k Contacts</span> <span class="price-bad">$150/mo</span></div>
-          <div class="tax-row"><span>50k Contacts</span> <span class="price-bad">$350/mo</span></div>
-          <div class="tax-row final"><span>100k+ Contacts</span> <span class="price-bad">$700+/mo</span></div>
-          <p style="color: #E53E3E; font-size: 0.8rem; margin-top: 20px; font-style: italic;">Scaling cost kills your margins.</p>
+          <h4 style="text-transform: uppercase; letter-spacing: 1px; color: #C53030; font-size: 0.8rem; margin-bottom: 20px;">Traditional Platforms</h4>
+          <div class="tax-row"><span>10,000 Contacts</span> <span class="price-bad">$150/mo</span></div>
+          <div class="tax-row"><span>50,000 Contacts</span> <span class="price-bad">$350/mo</span></div>
+          <div class="tax-row" style="border:none"><span>100,000+ Contacts</span> <span class="price-bad">$700+/mo</span></div>
+          <p style="font-size: 0.8rem; color: #C53030; font-style: italic; margin-top: 25px;">Scaling cost kills your profit margins.</p>
         </div>
         
         <div class="comp-box comp-good">
-          <span class="badge-fixed">FLAT PLATFORM FEE</span>
-          <h4>The Fuego Way</h4>
-          <div class="tax-row"><span>10k Contacts</span> <span class="price-fuego">$29/mo</span></div>
-          <div class="tax-row"><span>50k Contacts</span> <span class="price-fuego">$29/mo</span></div>
-          <div class="tax-row final"><span>100k+ Contacts</span> <span class="price-fuego">$29/mo</span></div>
-          <p style="color: var(--primary); font-size: 0.8rem; margin-top: 20px; font-weight: 600;">Your cost stays flat while you grow.</p>
+          <div style="position: absolute; top: 20px; right: 20px; background: #FFEDD5; color: #9A3412; padding: 4px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 800;">LOCKED PRICE</div>
+          <h4 style="text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-size: 0.8rem; margin-bottom: 20px;">The Fuego Way</h4>
+          <div class="tax-row"><span>10,000 Contacts</span> <span class="price-fuego">$29/mo</span></div>
+          <div class="tax-row"><span>50,000 Contacts</span> <span class="price-fuego">$29/mo</span></div>
+          <div class="tax-row" style="border:none"><span>100,000+ Contacts</span> <span class="price-fuego">$29/mo</span></div>
+          <p style="font-size: 0.8rem; color: var(--primary); font-style: italic; margin-top: 25px;">Your cost stays flat while your revenue grows.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="how-it-works">
-    <div class="container">
-      <div class="section-title">
-        <h2>How Send with Fuego Works</h2>
-        <p>Unlock 90% savings by bringing your own sending infrastructure.</p>
-      </div>
-      
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-icon">🔌</div>
-          <h3>Connect SES</h3>
-          <p>Drop in your Amazon SES API keys. You maintain 100% ownership of your sending reputation.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-icon">👥</div>
-          <h3>Import Unlimited</h3>
-          <p>Upload 1,000 or 1,000,000 contacts. We never charge you for list size or storage.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-icon">🔥</div>
-          <h3>Send with Fuego</h3>
-          <p>Use our pro builder and canary testing to send high-volume campaigns that hit the inbox.</p>
-        </div>
-        <div class="step-card">
-          <div class="step-icon">💰</div>
-          <h3>Pay SES Directly</h3>
-          <p>You pay Amazon $0.10 per 1k emails sent. No markup. No middleman fees.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="container">
+  <section class="feature-callout container">
+    
     <div class="feature-row">
-      <div class="feature-content">
-        <h2>Predictable Margins for Agencies</h2>
-        <p>Stop worrying about your clients' list sizes. With Fuego's fixed platform fee, every new subscriber your client gains is pure profit for your agency.</p>
-        <ul class="p-features" style="margin-bottom: 20px;">
-          <li>Unlimited Contact Storage</li>
-          <li>No "Next Tier" billing surprises</li>
-          <li>Sub-account management for clients</li>
+      <div class="feature-text">
+        <h2>Smart-SES Sending Intelligence</h2>
+        <p>Tired of manually checking your AWS quotas? Fuego automatically monitors your SES account health and throttles your campaign speed in real-time to match your current rate limits. Send millions of emails without a single "rate exceeded" error.</p>
+        <ul class="p-features" style="color: var(--text-muted); list-style: none;">
+          <li style="margin-bottom: 10px;">🔥 Real-time SES Limit Auto-Throttling</li>
+          <li style="margin-bottom: 10px;">🔥 Reputation Monitoring & Alerts</li>
+          <li style="margin-bottom: 10px;">🔥 Auto-Pause on High Bounce Detection</li>
         </ul>
       </div>
-      <div class="feature-visual">[ Agency Dashboard Preview ]</div>
+      <div class="feature-visual">
+        <div class="ui-mockup">
+          <p style="color:#10b981">// SES RATE MONITOR</p>
+          <p>> AWS_QUOTA: 14 emails/sec</p>
+          <p>> FUEGO_FLOW: Throttled to 13.5/sec</p>
+          <p>> STATUS: 100% Delivery Safety</p>
+          <div style="width:100%; background:#e2e8f0; height:10px; border-radius:10px; margin-top:20px;">
+            <div style="width:75%; background:var(--primary); height:10px; border-radius:10px;"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="feature-row reverse">
+      <div class="feature-text">
+        <h2>Distraction-Free Markdown Editor</h2>
+        <p>Leave the clunky drag-and-drop builders behind. Fuego features a power-user Markdown editor with a live side-by-side preview. Create beautiful, high-converting emails with the speed of plain text.</p>
+        <p>Perfect for long-form newsletters and personal-feel marketing that actually hits the primary inbox.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="ui-mockup">
+          <p style="color:#6366f1"># Welcome to the Fire</p>
+          <p>Hi {{first_name}},</p>
+          <p>This is **bold** text and [this is a link](https://...)</p>
+          <p style="border-top:1px solid #ddd; margin-top:15px; padding-top:10px; color:#1e293b; font-family:sans-serif; font-size:1.1rem;"><b>Welcome to the Fire</b></p>
+          <p style="font-family:sans-serif; font-size:0.9rem;">Hi Subscriber, This is bold text...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-text">
+        <h2>Professional List Management</h2>
+        <p>Manage 1,000,000 contacts as easily as 10. Store unlimited custom attributes—purchase history, tags, locations, and lead scores. Use our dynamic segmentation to build lists that update automatically based on user behavior.</p>
+        <ul class="p-features" style="color: var(--text-muted); list-style: none;">
+          <li style="margin-bottom: 10px;">🔥 Unlimited Custom Fields (Attributes)</li>
+          <li style="margin-bottom: 10px;">🔥 Dynamic Auto-Updating Segments</li>
+          <li style="margin-bottom: 10px;">🔥 Instant CSV Imports/Exports</li>
+        </ul>
+      </div>
+      <div class="feature-visual">
+        <div class="ui-mockup">
+          <p>LIST: "VIP Customers"</p>
+          <p>FILTER: total_spent > 500 AND country == 'USA'</p>
+          <p style="color:var(--primary); margin-top:15px;">> SYNCING: 1,402 Matches found</p>
+          <p>> NEXT REFRESH: Real-time</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-row reverse">
+      <div class="feature-text">
+        <h2>Exponential Margins for Agencies</h2>
+        <p>Stop paying SaaS companies for your clients' list growth. With Fuego Agency, you get isolated sub-accounts for every client. Because your platform fee is fixed, every new lead your client generates increases <i>your</i> margin, not your software bill.</p>
+      </div>
+      <div class="feature-visual">
+        <div class="ui-mockup">
+          <p>AGENCY PORTAL</p>
+          <p style="color:#6366f1">Client A: 45k subs - Cost: $0</p>
+          <p style="color:#6366f1">Client B: 90k subs - Cost: $0</p>
+          <p style="color:#6366f1">Client C: 12k subs - Cost: $0</p>
+          <p style="border-top:1px solid #ddd; margin-top:20px; font-weight:bold; color:#000;">NET SOFTWARE COST: $129/mo</p>
+        </div>
+      </div>
+    </div>
+
   </section>
 
   <section class="pricing" id="pricing">
     <div class="container">
       <div class="section-title">
-        <h2>Unlimited Contacts on Every Plan</h2>
-        <p>Simple, transparent, and built to scale.</p>
+        <h2 style="color: white">Unlimited Contacts on Every Plan</h2>
+        <p style="color: rgba(255,255,255,0.6)">Pay for the features and volume you need, not for the size of your database.</p>
       </div>
 
-      <div class="pricing-grid">
+      <div class="p-grid">
         <div class="p-card">
           <h3>Free</h3>
-          <p style="color: var(--text-muted);">For validation</p>
+          <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">For testing & validation</p>
           <div class="p-price">$0<span>/mo</span></div>
           <ul class="p-features">
-            <li style="font-weight: 700;">Unlimited Contacts</li>
+            <li><strong>Unlimited Contacts</strong></li>
             <li>10k Sends / mo</li>
-            <li>30-min Safety Delay</li>
-            <li>Standard Analytics</li>
+            <li>Markdown Editor</li>
+            <li>Shared Tracking Domain</li>
           </ul>
-          <%= link_to "Start Free", new_user_registration_path, class: "p-btn", style: "display:block; text-align:center; background:#F1F5F9; color:#0F172A; text-decoration:none; padding:12px; border-radius:8px; font-weight:700;" %>
+          <%= link_to "Start Free", new_user_registration_path, class: "btn-primary btn", style: "width:100%; text-align:center; padding:12px; font-size:0.9rem;" %>
+        </div>
+
+        <div class="p-card">
+          <h3>Starter</h3>
+          <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">For creators & growth</p>
+          <div class="p-price">$29<span>/mo</span></div>
+          <ul class="p-features">
+            <li><strong>Unlimited Contacts</strong></li>
+            <li>300k Sends / mo</li>
+            <li>Custom Domain</li>
+            <li>Smart-SES Throttling</li>
+            <li>Email Support</li>
+          </ul>
+          <%= link_to "Go Starter", new_user_registration_path, class: "btn-primary btn", style: "width:100%; text-align:center; padding:12px; font-size:0.9rem; background:white; color:var(--secondary);" %>
         </div>
 
         <div class="p-card featured">
-          <h3>Starter</h3>
-          <p style="color: var(--text-muted);">For growth</p>
-          <div class="p-price">$29<span>/mo</span></div>
+          <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">BEST VALUE</div>
+          <h3>Pro</h3>
+          <p style="color: rgba(255,255,255,0.6); font-size: 0.8rem;">For scaling businesses</p>
+          <div class="p-price">$59<span>/mo</span></div>
           <ul class="p-features">
-            <li style="font-weight: 700;">Unlimited Contacts</li>
-            <li>300k Sends / mo</li>
-            <li>Instant Dispatch</li>
-            <li>Custom Tracking Domain</li>
-            <li>Email Support</li>
+            <li><strong>Unlimited Contacts</strong></li>
+            <li>1M Sends / mo</li>
+            <li>Priority Analytics</li>
+            <li>10 User Seats</li>
+            <li>Dedicated IP Help</li>
           </ul>
-          <%= link_to "Get Started", new_user_registration_path, class: "p-btn", style: "display:block; text-align:center; background:var(--primary); color:white; text-decoration:none; padding:12px; border-radius:8px; font-weight:700;" %>
+          <%= link_to "Go Pro", new_user_registration_path, class: "btn-primary btn", style: "width:100%; text-align:center; padding:12px; font-size:0.9rem;" %>
         </div>
 
         <div class="p-card">
           <h3>Agency</h3>
-          <p style="color: var(--text-muted);">For resellers</p>
+          <p style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">For resellers & power users</p>
           <div class="p-price">$129<span>/mo</span></div>
           <ul class="p-features">
-            <li style="font-weight: 700;">Unlimited Contacts</li>
-            <li>Unlimited Sends</li>
+            <li><strong>Unlimited Contacts</strong></li>
+            <li><strong>Unlimited Sends</strong></li>
             <li>3 Sub-Accounts Included</li>
-            <li>White-Label Interface</li>
+            <li>White-Label Dashboard</li>
             <li>Slack Support</li>
           </ul>
-          <%= link_to "Start Agency", new_user_registration_path, class: "p-btn", style: "display:block; text-align:center; background:#0F172A; color:white; text-decoration:none; padding:12px; border-radius:8px; font-weight:700;" %>
+          <%= link_to "Start Agency", new_user_registration_path, class: "btn-primary btn", style: "width:100%; text-align:center; padding:12px; font-size:0.9rem;" %>
         </div>
       </div>
+
+      <p style="text-align: center; margin-top: 40px; font-size: 0.8rem; opacity: 0.5;">
+        * All plans require an active Amazon SES account. You pay Amazon directly ($0.10 per 1k emails).
+      </p>
     </div>
   </section>
 
   <footer class="footer">
     <div class="container">
-      <h2>Ignite your list today.</h2>
-      <p style="opacity: 0.7; margin: 20px 0 40px;">No credit card required to start on the Free plan.</p>
-      <%= link_to "Create Your Account", new_user_registration_path, class: "btn btn-primary" %>
-      <div style="margin-top: 80px; opacity: 0.4; font-size: 0.8rem;">
+      <h2>The Fire is Spreading.</h2>
+      <p style="opacity: 0.6; margin: 20px 0 40px;">Join 1,000+ smart marketers and agencies saving 90% on their sending bills.</p>
+      <%= link_to "Ignite Your First List", new_user_registration_path, class: "btn btn-primary" %>
+      <div style="margin-top: 80px; opacity: 0.3; font-size: 0.8rem;">
         &copy; <%= Time.current.year %> Send with Fuego. Built for high-volume marketers.
       </div>
     </div>
