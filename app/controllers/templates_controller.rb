@@ -58,8 +58,10 @@ class TemplatesController < ApplicationController
     html_content = params[:content] || @template.html_content || ""
 
     begin
-      # Create sample data for merge tags with rich content
+      # Create sample data for merge tags with rich content and varied image sizes
       sample_markdown = <<~MARKDOWN
+        ![Wide Banner](https://placehold.co/1200x200/673AB7/white?text=Wide+Banner+Header)
+
         # Welcome to Our Newsletter
 
         Hi {{first_name}},
@@ -69,6 +71,9 @@ class TemplatesController < ApplicationController
         ## Featured Stories
 
         ### Story 1: New Product Launch
+
+        ![Small Icon](https://placehold.co/150x150/4CAF50/white?text=Icon)
+
         We're thrilled to announce our latest product. Here's what makes it special:
 
         - **Easy to use** - Intuitive interface designed for everyone
@@ -87,7 +92,13 @@ class TemplatesController < ApplicationController
         3. Improved customer satisfaction scores
         4. Scaled to handle 10x more users
 
-        ![Customer Success Graph](https://placehold.co/600x250/2196F3/white?text=Success+Metrics)
+        ![Success Metrics Graph](https://placehold.co/700x350/2196F3/white?text=Success+Metrics)
+
+        ## Featured Team Member
+
+        ![Portrait Photo](https://placehold.co/250x400/9C27B0/white?text=Team+Member)
+
+        Meet Sarah, our Customer Success Manager, who has helped over 500 companies achieve their goals.
 
         ## Quick Tips
 
@@ -100,13 +111,15 @@ class TemplatesController < ApplicationController
         #### Tip #3: Automate Everything
         Set up workflows to automate repetitive tasks.
 
-        ![Tips Illustration](https://placehold.co/600x200/FF9800/white?text=Pro+Tips)
+        ![Ultra-Wide Banner](https://placehold.co/1400x150/FF9800/white?text=Limited+Time+Offer)
 
         ## What's Next?
 
         - **Webinar** - Join us next Tuesday for a live demo
         - **Blog** - Check out our latest articles
         - **Support** - Our team is here to help 24/7
+
+        ![Square Thumbnail](https://placehold.co/200x200/F44336/white?text=CTA)
 
         ---
 
