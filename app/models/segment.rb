@@ -4,6 +4,7 @@ class Segment < ApplicationRecord
   has_many :campaigns, dependent: :nullify
 
   validates :name, presence: true
+  validate :account_can_create_segment, on: :create
 
   # Build dynamic query from criteria using the SegmentQueryBuilder service
   def matching_subscribers
@@ -28,5 +29,14 @@ class Segment < ApplicationRecord
   def current_count
     refresh_count! if count_stale?
     estimated_subscribers_count
+  end
+
+  private
+
+  # Validate that account can create another segment (Free plan limited to 1)
+  def account_can_create_segment
+    unless account.can_create_segment?
+      errors.add(:base, "Your plan allows only #{account.max_segments} segment. Upgrade to create more segments.")
+    end
   end
 end

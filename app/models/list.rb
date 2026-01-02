@@ -6,6 +6,7 @@ class List < ApplicationRecord
   has_many :campaigns, dependent: :destroy
 
   validates :name, presence: true
+  validate :account_can_create_list, on: :create
 
   # Get active subscribers
   def active_subscribers
@@ -38,5 +39,14 @@ class List < ApplicationRecord
       unsubscribed_at: Time.current
     )
     refresh_subscribers_count!
+  end
+
+  private
+
+  # Validate that account can create another list (Free plan limited to 1)
+  def account_can_create_list
+    unless account.can_create_list?
+      errors.add(:base, "Your plan allows only #{account.max_lists} list. Upgrade to create more lists.")
+    end
   end
 end
