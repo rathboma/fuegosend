@@ -3,8 +3,10 @@ default: &default
     - polling_interval: 1
       batch_size: 500
   workers:
-    # High priority email queue - handles individual email sends
-    - queues: emails
+    # High priority email queue - handles individual email sends per account
+    # Pattern-based routing ensures fair distribution across accounts
+    # Concurrency controls limit each account to 10 concurrent sends
+    - queues: "emails_account_*"
       threads: 5
       processes: <%= ENV.fetch("EMAIL_WORKER_PROCESSES", 2) %>
       polling_interval: 0.1

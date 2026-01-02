@@ -48,9 +48,9 @@ module Campaigns
         return
       end
 
-      # Enqueue individual send jobs
+      # Enqueue individual send jobs with account_id for queue routing and concurrency control
       pending_sends.each do |campaign_send|
-        Campaigns::SendEmailJob.set(queue: :emails).perform_later(campaign_send.id)
+        Campaigns::SendEmailJob.perform_later(campaign_send.id, account.id)
       end
 
       Rails.logger.info("[EnqueueSendingJob] Campaign #{campaign_id} - enqueued #{pending_sends.count} sends")

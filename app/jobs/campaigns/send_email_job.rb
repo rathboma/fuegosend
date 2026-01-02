@@ -1,6 +1,29 @@
 module Campaigns
   class SendEmailJob < ApplicationJob
-    queue_as :emails
+    # Use per-account queues for fair distribution across accounts
+    # Workers configured to process "emails_account_*" pattern
+    queue_as do
+      account_id = arguments.second
+      "emails_account_#{account_id}"
+    end
+
+    # Limit concurrent email sends per account based on their SES rate limit
+    # - to: dynamically calculated as 70% of account's max_send_rate
+    #   * Leaves 30% headroom to handle race conditions in rate limiter
+    #   * New accounts (1/sec) → concurrency of 1
+    #   * Free tier (14/sec) → concurrency of 9
+    #   * Scales automatically as accounts request SES limit increases
+    # - duration: 10.minutes is failsafe if job doesn't release semaphore
+    # - key groups jobs by account_id for per-account limiting
+    # - on_conflict: :block (default) queues jobs rather than discarding
+    limits_concurrency to: ->(campaign_send_id, account_id) {
+                         account = Account.find(account_id)
+                         max_rate = account.ses_max_send_rate || 14
+                         # Use 70% of max rate, minimum 1
+                         [(max_rate * 0.7).to_i, 1].max
+                       },
+                       key: ->(campaign_send_id, account_id) { account_id },
+                       duration: 10.minutes
 
     # Don't retry automatically - we handle retries manually in the service
     # This prevents duplicate sends
@@ -8,7 +31,7 @@ module Campaigns
       Rails.logger.error("[SendEmailJob] Job failed: #{error.class.name} - #{error.message}")
     end
 
-    def perform(campaign_send_id)
+    def perform(campaign_send_id, account_id)
       campaign_send = CampaignSend.find(campaign_send_id)
       campaign = campaign_send.campaign
       account = campaign.account
@@ -39,7 +62,7 @@ module Campaigns
         else
           # Per-second rate limit - retry after wait time
           Rails.logger.info("[SendEmailJob] Rate limited, retrying in #{wait_time} seconds")
-          self.class.set(wait: wait_time).perform_later(campaign_send_id)
+          self.class.set(wait: wait_time).perform_later(campaign_send_id, account_id)
           return
         end
       end

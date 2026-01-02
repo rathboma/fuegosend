@@ -26,8 +26,8 @@ module Campaigns
 
       Rails.logger.info("[RetryFailedJob] Retrying CampaignSend #{campaign_send_id} (attempt #{campaign_send.retry_count})")
 
-      # Enqueue the send job again
-      Campaigns::SendEmailJob.set(queue: :emails).perform_later(campaign_send_id)
+      # Enqueue the send job again with account_id for queue routing and concurrency control
+      Campaigns::SendEmailJob.perform_later(campaign_send_id, campaign.account_id)
     end
   end
 end

@@ -66,6 +66,10 @@ class Campaign < ApplicationRecord
         started_sending_at: Time.current
       )
 
+      # Refresh SES quota before starting to ensure we have latest limits
+      # This is async but will complete quickly before emails start sending
+      account.refresh_ses_quota!
+
       # Create campaign_sends for all recipients
       create_campaign_sends!
 

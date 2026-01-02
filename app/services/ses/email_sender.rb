@@ -210,8 +210,9 @@ module Ses
         campaign_send.mark_failed!
         failure(error_message)
       when "ThrottlingException"
-        # Rate limited - mark for retry
-        campaign_send.mark_failed!(5.minutes)
+        # Rate limited - mark for retry with exponential backoff
+        retry_delay = calculate_retry_delay
+        campaign_send.mark_failed!(retry_delay)
         failure(error_message)
       else
         # Unknown error - mark for retry with exponential backoff
