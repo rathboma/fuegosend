@@ -83,6 +83,12 @@ class Campaign < ApplicationRecord
   def start_sending!
     return false unless can_send?
 
+    # Free plan accounts go through sandbox workflow with 30-min cooldown
+    if account.requires_sandbox_workflow?
+      return queue_for_review!
+    end
+
+    # Paid plans go straight to sending
     transaction do
       update!(
         status: "sending",
@@ -102,6 +108,21 @@ class Campaign < ApplicationRecord
       # Enqueue sending jobs
       Campaigns::EnqueueSendingJob.perform_later(id)
     end
+
+    true
+  end
+
+  # Queue campaign for review (sandbox workflow for free plan)
+  def queue_for_review!
+    return false unless can_send?
+
+    update!(
+      status: "queued_for_review",
+      queued_at: Time.current
+    )
+
+    # Background job will process after 30-minute cooldown
+    # RiskManagement::ProcessQueuedCampaignJob runs every minute
 
     true
   end
