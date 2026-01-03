@@ -73,6 +73,33 @@
     </div>
   <% end %>
 
+  <!-- Preparation Progress Bar -->
+  <% if @campaign.preparing_sends? %>
+    <div class="card border mb-4" data-controller="auto-refresh" data-auto-refresh-url-value="<%= campaign_path(@campaign) %>" data-auto-refresh-interval-value="2000">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">📋 Preparing Campaign</h5>
+          <span class="badge bg-primary"><%= @campaign.preparation_progress %>%</span>
+        </div>
+        <div class="progress mb-2" style="height: 20px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+               role="progressbar"
+               style="width: <%= @campaign.preparation_progress %>%"
+               aria-valuenow="<%= @campaign.preparation_progress %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+          </div>
+        </div>
+        <small class="text-muted">
+          Creating email queue: <%= number_with_delimiter(@campaign.sends_created_count) %> of <%= number_with_delimiter(@campaign.total_recipients) %> recipients
+        </small>
+        <p class="text-muted small mb-0 mt-2">
+          <strong>What's happening:</strong> We're preparing individual email records for each recipient. This ensures accurate tracking and delivery management. Large campaigns may take a few minutes.
+        </p>
+      </div>
+    </div>
+  <% end %>
+
   <!-- Stats Cards -->
   <div class="row g-4 mb-4">
     <div class="col-md-3">
@@ -114,19 +141,28 @@
     </div>
   </div>
 
-  <!-- Progress Bar -->
+  <!-- Sending Progress Bar -->
   <% if @campaign.sending? && @campaign.total_recipients > 0 %>
-    <div class="card border mb-4">
+    <div class="card border mb-4" data-controller="auto-refresh" data-auto-refresh-url-value="<%= campaign_path(@campaign) %>" data-auto-refresh-interval-value="5000">
       <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="mb-0">Sending Progress</h5>
-          <span class="badge bg-primary"><%= @campaign.percent_complete %>%</span>
+          <h5 class="mb-0">📧 Sending Progress</h5>
+          <span class="badge bg-success"><%= @campaign.percent_complete %>%</span>
         </div>
         <div class="progress mb-2" style="height: 20px;">
-          <div class="progress-bar bg-success" role="progressbar" style="width: <%= @campaign.percent_complete %>%"></div>
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+               role="progressbar"
+               style="width: <%= @campaign.percent_complete %>%"
+               aria-valuenow="<%= @campaign.percent_complete %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+          </div>
         </div>
         <small class="text-muted">
           <%= number_with_delimiter(@campaign.sent_count) %> of <%= number_with_delimiter(@campaign.total_recipients) %> sent
+          <% if @campaign.sent_count > 0 && @campaign.sent_count < @campaign.total_recipients %>
+            • Auto-refreshing every 5 seconds
+          <% end %>
         </small>
       </div>
     </div>

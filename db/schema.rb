@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_03_012855) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_03_014351) do
   create_table "accounts", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "aws_access_key_id"
@@ -150,10 +150,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_012855) do
     t.integer "list_id", null: false
     t.string "name", null: false
     t.integer "opened_count", default: 0, null: false
+    t.integer "preparation_progress", default: 0, null: false
     t.datetime "queued_at"
     t.string "reply_to_email"
     t.datetime "scheduled_at"
     t.integer "segment_id"
+    t.integer "sends_created_count", default: 0, null: false
     t.integer "sent_count", default: 0, null: false
     t.datetime "started_sending_at"
     t.string "status", default: "draft", null: false

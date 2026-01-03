@@ -100,13 +100,20 @@ class Campaign < ApplicationRecord
       account.refresh_ses_quota!
 
       # Create campaign_sends for all recipients
-      create_campaign_sends!
+      # Use async for large campaigns (>1000 recipients)
+      estimated_count = recipients.count
+      if estimated_count > 1000
+        create_campaign_sends_async!
+        # Job will call Campaigns::EnqueueSendingJob when done
+      else
+        create_campaign_sends!
 
-      # Notify campaign creator (will implement with mailer)
-      notify_sending_started!
+        # Notify campaign creator
+        notify_sending_started!
 
-      # Enqueue sending jobs
-      Campaigns::EnqueueSendingJob.perform_later(id)
+        # Enqueue sending jobs
+        Campaigns::EnqueueSendingJob.perform_later(id)
+      end
     end
 
     true
@@ -136,8 +143,21 @@ class Campaign < ApplicationRecord
     account.refresh_ses_quota!
 
     # Create campaign_sends for all recipients
-    create_campaign_sends!
+    # Use async for large campaigns (>1000 recipients)
+    estimated_count = recipients.count
+    if estimated_count > 1000
+      create_campaign_sends_async!
+      # Job will call continue_after_preparation! when done
+    else
+      create_campaign_sends!
+      continue_after_preparation!
+    end
 
+    true
+  end
+
+  # Continue workflow after campaign sends are prepared
+  def continue_after_preparation!
     # Check if list is large enough to warrant canary testing
     if total_recipients > 500
       # Send canary batch (100 random contacts)
@@ -147,8 +167,6 @@ class Campaign < ApplicationRecord
       update!(status: "approved")
       start_full_send!
     end
-
-    true
   end
 
   # Send canary batch to 100 random subscribers
@@ -336,13 +354,28 @@ class Campaign < ApplicationRecord
     end
   end
 
-  # Create campaign_sends for all recipients
+  # Create campaign_sends for all recipients (synchronous - for small campaigns)
   def create_campaign_sends!
     recipients.find_each(batch_size: 1000) do |subscriber|
       campaign_sends.create!(subscriber: subscriber)
     end
 
     update!(total_recipients: campaign_sends.count)
+  end
+
+  # Create campaign_sends asynchronously with progress tracking
+  def create_campaign_sends_async!
+    Campaigns::CreateCampaignSendsJob.perform_later(id)
+  end
+
+  # Check if campaign sends are being prepared
+  def preparing_sends?
+    preparation_progress < 100 && sends_created_count < total_recipients
+  end
+
+  # Check if preparation is complete
+  def preparation_complete?
+    preparation_progress == 100 && sends_created_count == total_recipients
   end
 
   # Calculate stats
