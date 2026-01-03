@@ -1,0 +1,19 @@
+You're Invited to Join <%= @account.name %>!
+================================================================================
+
+Hi there,
+
+<%= @invited_by.first_name || @invited_by.email %> has invited you to join <%= @account.name %> on FuegoMail.
+
+You've been invited as a <%= @invitation.role.titleize %>.
+
+Click the link below to accept the invitation and create your account:
+
+<%= @accept_url %>
+
+This invitation will expire on <%= @invitation.expires_at.strftime("%B %d, %Y") %>.
+
+If you weren't expecting this invitation, you can safely ignore this email.
+
+---
+This email was sent by <%= @account.name %>

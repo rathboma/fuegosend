@@ -1,5 +1,6 @@
 class Account < ApplicationRecord
   has_many :users, dependent: :destroy
+  has_many :invitations, dependent: :destroy
   has_many :api_keys, dependent: :destroy
   has_many :lists, dependent: :destroy
   has_many :subscribers, dependent: :destroy

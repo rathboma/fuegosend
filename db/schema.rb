@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_02_220203) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_03_012855) do
   create_table "accounts", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.string "aws_access_key_id"
@@ -193,6 +193,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_220203) do
     t.index ["slug"], name: "index_images_on_slug", unique: true
   end
 
+  create_table "invitations", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.integer "account_id", null: false
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "expires_at", null: false
+    t.integer "invited_by_id", null: false
+    t.string "role", default: "member", null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "email"], name: "index_invitations_on_account_id_and_email"
+    t.index ["account_id"], name: "index_invitations_on_account_id"
+    t.index ["invited_by_id"], name: "index_invitations_on_invited_by_id"
+    t.index ["token"], name: "index_invitations_on_token", unique: true
+  end
+
   create_table "list_subscriptions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "list_id", null: false
@@ -336,6 +352,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_02_220203) do
   add_foreign_key "campaigns", "templates"
   add_foreign_key "custom_field_definitions", "accounts"
   add_foreign_key "images", "accounts"
+  add_foreign_key "invitations", "accounts"
+  add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "list_subscriptions", "lists"
   add_foreign_key "list_subscriptions", "subscribers"
   add_foreign_key "lists", "accounts"
