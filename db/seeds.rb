@@ -2,6 +2,38 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
+# Production seeds - create default admin account
+if Rails.env.production?
+  puts "Seeding production data..."
+
+  # Create admin account
+  account = Account.find_or_create_by!(subdomain: "beekeeper") do |a|
+    a.name = "Beekeeper Studio"
+    a.aws_region = "us-east-1"
+    a.active = true
+    a.plan = "agency"
+  end
+  puts "✓ Created account: #{account.name}"
+
+  # Create admin user
+  user = User.find_or_create_by!(email: "matthew@beekeeperstudio.io") do |u|
+    u.account = account
+    u.password = "password"
+    u.password_confirmation = "password"
+    u.first_name = "Matthew"
+    u.last_name = "Rathbone"
+    u.role = "owner"
+  end
+  puts "✓ Created admin user: #{user.email}"
+  puts "  ⚠️  Default password: 'password' - Please change this immediately after first login!"
+
+  puts "\n✅ Production seeding complete!"
+  puts "\nSign in at: https://your-domain.com/users/sign_in"
+  puts "  Email: matthew@beekeeperstudio.io"
+  puts "  Password: password (CHANGE THIS!)"
+  puts ""
+end
+
 # Only seed in development environment
 if Rails.env.development?
   puts "Seeding development data..."

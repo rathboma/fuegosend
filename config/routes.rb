@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
-  devise_for :users
+  # Disable public registration - users must be invited
+  devise_for :users, skip: [:registrations]
 
   # Public invitation acceptance (no auth required)
   get "invitations/:token/accept", to: "invitations#accept", as: :accept_invitation
