@@ -12,6 +12,7 @@ if Rails.env.production?
     a.aws_region = "us-east-1"
     a.active = true
     a.plan = "agency"
+    a.default_from_email = "newsletter@beekeeperstudio.io"
   end
   puts "✓ Created account: #{account.name}"
 
@@ -46,6 +47,7 @@ if Rails.env.development?
     a.ses_max_24_hour_send = 200
     a.ses_sent_last_24_hours = 0
     a.active = true
+    a.default_from_email = "demo@example.com"
   end
   puts "✓ Created demo account: #{account.name}"
 
