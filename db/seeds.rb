@@ -17,16 +17,16 @@ if Rails.env.production?
   puts "✓ Created account: #{account.name}"
 
   # Create admin user
+  admin_password = ENV.fetch("ADMIN_PASSWORD") { raise "ADMIN_PASSWORD environment variable is required for production seeding" }
   user = User.find_or_create_by!(email: "matthew@beekeeperstudio.io") do |u|
     u.account = account
-    u.password = "password"
-    u.password_confirmation = "password"
+    u.password = admin_password
+    u.password_confirmation = admin_password
     u.first_name = "Matthew"
     u.last_name = "Rathbone"
     u.role = "owner"
   end
   puts "✓ Created admin user: #{user.email}"
-  puts "  ⚠️  Default password: 'password' - Please change this immediately after first login!"
 
   puts "\n✅ Production seeding complete!"
   puts "\nSign in at: https://your-domain.com/users/sign_in"

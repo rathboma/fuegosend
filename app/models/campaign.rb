@@ -213,15 +213,15 @@ class Campaign < ApplicationRecord
     # Decision thresholds
     if bounce_rate > 5.0
       suspend_campaign!("High bounce rate in canary batch: #{bounce_rate}% (threshold: 5%)")
-      return false
+      false
     elsif complaint_rate > 1.0
       suspend_campaign!("High complaint rate in canary batch: #{complaint_rate}% (threshold: 1%)")
-      return false
+      false
     else
       # Passed canary test, approve and send remaining
       update!(status: "approved")
       start_full_send!
-      return true
+      true
     end
   end
 
@@ -263,7 +263,7 @@ class Campaign < ApplicationRecord
     return false unless sending?
 
     # Only check after minimum sample size (50 emails sent)
-    sent_emails = campaign_sends.where(status: ["delivered", "bounced", "complained"]).count
+    sent_emails = campaign_sends.where(status: [ "delivered", "bounced", "complained" ]).count
     return false if sent_emails < 50
 
     # Check cumulative stats for campaign
@@ -479,9 +479,9 @@ class Campaign < ApplicationRecord
     token = verifier.generate(campaign_send.id)
 
     # Build URL with configured host
-    host = Rails.application.config.action_mailer.default_url_options[:host] || 'localhost'
+    host = Rails.application.config.action_mailer.default_url_options[:host] || "localhost"
     port = Rails.application.config.action_mailer.default_url_options[:port]
-    protocol = Rails.env.production? ? 'https' : 'http'
+    protocol = Rails.env.production? ? "https" : "http"
 
     url = "#{protocol}://#{host}"
     url += ":#{port}" if port && !Rails.env.production?

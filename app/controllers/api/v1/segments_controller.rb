@@ -26,7 +26,7 @@ module Api
         render json: {
           segment: @segment.as_json(
             include: :list,
-            methods: [:current_count]
+            methods: [ :current_count ]
           )
         }
       end

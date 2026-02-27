@@ -188,7 +188,7 @@ class Account < ApplicationRecord
     when 1
       # Free plan: Rotate through disposable domain pool
       # In production, this would be a pool of domains
-      pool = ["links-a.fuegomail.com", "links-b.fuegomail.com", "links-c.fuegomail.com"]
+      pool = [ "links-a.fuegomail.com", "links-b.fuegomail.com", "links-c.fuegomail.com" ]
       pool[id % pool.size]
     when 2
       # Starter/Pro: Premium shared domain

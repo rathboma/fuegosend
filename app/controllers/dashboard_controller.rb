@@ -4,10 +4,10 @@ class DashboardController < ApplicationController
   def index
     @stats = {
       total_lists: current_account.lists.count,
-      total_subscribers: current_account.subscribers.where(status: 'active').count,
+      total_subscribers: current_account.subscribers.where(status: "active").count,
       total_campaigns: current_account.campaigns.count,
-      campaigns_sending: current_account.campaigns.where(status: 'sending').count,
-      campaigns_scheduled: current_account.campaigns.where(status: 'scheduled').count
+      campaigns_sending: current_account.campaigns.where(status: "sending").count,
+      campaigns_scheduled: current_account.campaigns.where(status: "scheduled").count
     }
 
     # Recent campaigns

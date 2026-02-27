@@ -1,7 +1,7 @@
 class InvitationsController < ApplicationController
-  before_action :authenticate_user!, except: [:accept, :process_acceptance]
-  before_action :require_team_management_permission!, only: [:create, :destroy]
-  before_action :set_invitation_by_token, only: [:accept, :process_acceptance]
+  before_action :authenticate_user!, except: [ :accept, :process_acceptance ]
+  before_action :require_team_management_permission!, only: [ :create, :destroy ]
+  before_action :set_invitation_by_token, only: [ :accept, :process_acceptance ]
 
   def create
     @invitation = current_account.invitations.new(invitation_params)

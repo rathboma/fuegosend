@@ -14,6 +14,6 @@ class CreateApiKeys < ActiveRecord::Migration[8.1]
     end
 
     add_index :api_keys, :token_digest, unique: true
-    add_index :api_keys, [:account_id, :active]
+    add_index :api_keys, [ :account_id, :active ]
   end
 end

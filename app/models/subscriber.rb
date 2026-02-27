@@ -14,7 +14,7 @@ class Subscriber < ApplicationRecord
   scope :unsubscribed, -> { where(status: "unsubscribed") }
   scope :bounced, -> { where(status: "bounced") }
   scope :complained, -> { where(status: "complained") }
-  scope :suppressed, -> { where(status: ["bounced", "complained"]) }
+  scope :suppressed, -> { where(status: [ "bounced", "complained" ]) }
 
   # Query by custom attributes (SQLite JSON support)
   scope :with_attribute, ->(key, value) {

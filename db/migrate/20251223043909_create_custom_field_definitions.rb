@@ -11,6 +11,6 @@ class CreateCustomFieldDefinitions < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :custom_field_definitions, [:account_id, :name], unique: true
+    add_index :custom_field_definitions, [ :account_id, :name ], unique: true
   end
 end

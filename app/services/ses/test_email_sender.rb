@@ -28,7 +28,7 @@ module Ses
         send_params = {
           source: "#{campaign.from_name} <#{campaign.from_email}>",
           destination: {
-            to_addresses: [recipient_email]
+            to_addresses: [ recipient_email ]
           },
           message: {
             subject: {
@@ -46,7 +46,7 @@ module Ses
               }
             }
           },
-          reply_to_addresses: campaign.reply_to_email.present? ? [campaign.reply_to_email] : []
+          reply_to_addresses: campaign.reply_to_email.present? ? [ campaign.reply_to_email ] : []
         }
 
         response = ses_client.send_email(send_params)
@@ -72,9 +72,9 @@ module Ses
         Subscriber.new(
           email: recipient_email,
           custom_attributes: {
-            'name' => 'Test User',
-            'first_name' => 'Test',
-            'last_name' => 'User'
+            "name" => "Test User",
+            "first_name" => "Test",
+            "last_name" => "User"
           }
         )
       end

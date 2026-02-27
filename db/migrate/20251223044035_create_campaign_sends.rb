@@ -28,9 +28,9 @@ class CreateCampaignSends < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :campaign_sends, [:campaign_id, :subscriber_id], unique: true
-    add_index :campaign_sends, [:campaign_id, :status]
+    add_index :campaign_sends, [ :campaign_id, :subscriber_id ], unique: true
+    add_index :campaign_sends, [ :campaign_id, :status ]
     add_index :campaign_sends, :ses_message_id
-    add_index :campaign_sends, [:status, :next_retry_at]
+    add_index :campaign_sends, [ :status, :next_retry_at ]
   end
 end

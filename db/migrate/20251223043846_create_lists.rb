@@ -15,6 +15,6 @@ class CreateLists < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :lists, [:account_id, :name]
+    add_index :lists, [ :account_id, :name ]
   end
 end

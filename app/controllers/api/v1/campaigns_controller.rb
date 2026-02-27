@@ -20,8 +20,8 @@ module Api
 
         render json: {
           campaigns: @campaigns.as_json(
-            include: { list: { only: [:id, :name] } },
-            methods: [:percent_complete, :open_rate, :click_rate, :bounce_rate]
+            include: { list: { only: [ :id, :name ] } },
+            methods: [ :percent_complete, :open_rate, :click_rate, :bounce_rate ]
           ),
           meta: pagination_meta(@campaigns)
         }
@@ -34,9 +34,9 @@ module Api
         render json: {
           campaign: @campaign.as_json(
             include: {
-              list: { only: [:id, :name] },
-              segment: { only: [:id, :name] },
-              template: { only: [:id, :name] }
+              list: { only: [ :id, :name ] },
+              segment: { only: [ :id, :name ] },
+              template: { only: [ :id, :name ] }
             },
             methods: [
               :percent_complete,

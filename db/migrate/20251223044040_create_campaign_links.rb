@@ -10,6 +10,6 @@ class CreateCampaignLinks < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :campaign_links, [:campaign_id, :token], unique: true
+    add_index :campaign_links, [ :campaign_id, :token ], unique: true
   end
 end

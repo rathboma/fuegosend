@@ -16,6 +16,6 @@ class CreateSegments < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :segments, [:account_id, :list_id]
+    add_index :segments, [ :account_id, :list_id ]
   end
 end

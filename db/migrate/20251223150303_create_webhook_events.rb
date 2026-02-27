@@ -10,7 +10,7 @@ class CreateWebhookEvents < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :webhook_events, [:account_id, :processed]
+    add_index :webhook_events, [ :account_id, :processed ]
     add_index :webhook_events, :event_type
   end
 end

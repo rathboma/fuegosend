@@ -1,9 +1,9 @@
 class SubscriptionsController < ApplicationController
   # Use subscription form layout for public pages
-  layout "subscription_form", only: [:new, :confirm]
+  layout "subscription_form", only: [ :new, :confirm ]
 
   # Skip CSRF protection for unsubscribe endpoints
-  skip_before_action :verify_authenticity_token, only: [:unsubscribe_confirm]
+  skip_before_action :verify_authenticity_token, only: [ :unsubscribe_confirm ]
 
   # Show unsubscribe confirmation page
   # GET /unsubscribe/:token

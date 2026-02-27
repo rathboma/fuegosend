@@ -20,7 +20,7 @@ module Campaigns
                          account = Account.find(account_id)
                          max_rate = account.ses_max_send_rate || 14
                          # Use 70% of max rate, minimum 1
-                         [(max_rate * 0.7).to_i, 1].max
+                         [ (max_rate * 0.7).to_i, 1 ].max
                        },
                        key: ->(campaign_send_id, account_id) { account_id },
                        duration: 10.minutes

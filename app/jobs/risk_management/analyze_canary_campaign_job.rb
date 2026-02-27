@@ -10,7 +10,6 @@ module RiskManagement
       Campaign.canary_processing
         .where("canary_started_at <= ?", 30.minutes.ago)
         .find_each do |campaign|
-
           begin
             result = campaign.analyze_canary_results!
 

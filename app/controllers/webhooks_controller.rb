@@ -39,7 +39,7 @@ class WebhooksController < ApplicationController
       message = JSON.parse(body, symbolize_names: true)
 
       # Verify required SNS fields are present
-      required_fields = [:Type, :MessageId, :TopicArn, :Message]
+      required_fields = [ :Type, :MessageId, :TopicArn, :Message ]
       return nil unless required_fields.all? { |field| message.key?(field) }
 
       {

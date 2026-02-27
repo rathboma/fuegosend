@@ -10,7 +10,6 @@ module RiskManagement
       Campaign.queued_for_review
         .where("queued_at <= ?", 30.minutes.ago)
         .find_each do |campaign|
-
           begin
             campaign.process_after_cooldown!
             Rails.logger.info "Processed queued campaign #{campaign.id} after cooldown"

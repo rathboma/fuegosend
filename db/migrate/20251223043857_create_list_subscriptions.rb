@@ -10,8 +10,8 @@ class CreateListSubscriptions < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :list_subscriptions, [:list_id, :subscriber_id], unique: true
-    add_index :list_subscriptions, [:subscriber_id, :list_id]
-    add_index :list_subscriptions, [:list_id, :status]
+    add_index :list_subscriptions, [ :list_id, :subscriber_id ], unique: true
+    add_index :list_subscriptions, [ :subscriber_id, :list_id ]
+    add_index :list_subscriptions, [ :list_id, :status ]
   end
 end

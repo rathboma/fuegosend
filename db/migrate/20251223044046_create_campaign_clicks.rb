@@ -10,6 +10,6 @@ class CreateCampaignClicks < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :campaign_clicks, [:campaign_send_id, :campaign_link_id]
+    add_index :campaign_clicks, [ :campaign_send_id, :campaign_link_id ]
   end
 end

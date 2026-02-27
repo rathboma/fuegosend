@@ -1,8 +1,8 @@
-require 'ostruct'
+require "ostruct"
 
 class TemplatesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_template, only: [:show, :edit, :update, :destroy, :preview]
+  before_action :set_template, only: [ :show, :edit, :update, :destroy, :preview ]
 
   # GET /templates
   def index
@@ -141,8 +141,8 @@ class TemplatesController < ApplicationController
       )
 
       sample_subscriber = Subscriber.new(
-        email: 'subscriber@example.com',
-        custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+        email: "subscriber@example.com",
+        custom_attributes: { "name" => "John Doe", "first_name" => "John", "last_name" => "Doe" }
       )
 
       # Build sample data hash

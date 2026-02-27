@@ -19,8 +19,8 @@ class CreateSubscribers < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :subscribers, [:account_id, :email], unique: true
-    add_index :subscribers, [:account_id, :status]
+    add_index :subscribers, [ :account_id, :email ], unique: true
+    add_index :subscribers, [ :account_id, :status ]
     add_index :subscribers, :email
   end
 end

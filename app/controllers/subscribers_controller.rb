@@ -1,6 +1,6 @@
 class SubscribersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_subscriber, only: [:show, :edit, :update, :destroy]
+  before_action :set_subscriber, only: [ :show, :edit, :update, :destroy ]
 
   # GET /subscribers
   def index
@@ -145,7 +145,7 @@ class SubscribersController < ApplicationController
       return
     end
 
-    require 'csv'
+    require "csv"
 
     file = params[:file]
     list_id = params[:list_id]
@@ -179,7 +179,7 @@ class SubscribersController < ApplicationController
         # Handle custom attributes
         custom_attrs = subscriber.custom_attributes || {}
         row.headers.each do |header|
-          next if [:email, :status].include?(header)
+          next if [ :email, :status ].include?(header)
           value = row[header]
           custom_attrs[header.to_s] = value if value.present?
         end

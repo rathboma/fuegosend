@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
 
   def ensure_setup_complete
     return unless user_signed_in?
-    return if controller_name == 'setup' || devise_controller?
+    return if controller_name == "setup" || devise_controller?
     return if current_user.account.setup_complete?
 
     redirect_to setup_path, alert: "Please complete your account setup to continue."

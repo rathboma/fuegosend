@@ -69,12 +69,12 @@ module Ses
 
     # Get remaining sends for today
     def remaining_sends
-      [account.ses_max_24_hour_send - account.ses_sent_last_24_hours, 0].max
+      [ account.ses_max_24_hour_send - account.ses_sent_last_24_hours, 0 ].max
     end
 
     # Get remaining capacity in current second
     def remaining_capacity
-      [max_send_rate - current_rate, 0].max
+      [ max_send_rate - current_rate, 0 ].max
     end
 
     # Reset the per-second counter (mainly for testing)

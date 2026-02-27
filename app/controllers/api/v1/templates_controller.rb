@@ -19,7 +19,7 @@ module Api
         @template = current_account.templates.find(params[:id])
 
         render json: {
-          template: @template.as_json(methods: [:rendered_html])
+          template: @template.as_json(methods: [ :rendered_html ])
         }
       end
 

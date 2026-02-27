@@ -20,9 +20,9 @@ module Api
 
         render json: {
           list: @list.as_json(
-            methods: [:active_subscribers_count],
+            methods: [ :active_subscribers_count ],
             include: {
-              segments: { only: [:id, :name, :description, :estimated_subscribers_count] }
+              segments: { only: [ :id, :name, :description, :estimated_subscribers_count ] }
             }
           )
         }

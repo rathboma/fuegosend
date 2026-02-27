@@ -1,6 +1,6 @@
 class CampaignsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_campaign, only: [:show, :edit, :update, :destroy, :schedule, :send_now, :pause, :resume, :cancel, :send_test, :stats, :preview]
+  before_action :set_campaign, only: [ :show, :edit, :update, :destroy, :schedule, :send_now, :pause, :resume, :cancel, :send_test, :stats, :preview ]
 
   # GET /campaigns
   def index
@@ -207,13 +207,13 @@ class CampaignsController < ApplicationController
 
       sample_subscriber ||= if @campaign.list
         @campaign.list.subscribers.first || Subscriber.new(
-          email: 'subscriber@example.com',
-          custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+          email: "subscriber@example.com",
+          custom_attributes: { "name" => "John Doe", "first_name" => "John", "last_name" => "Doe" }
         )
       else
         Subscriber.new(
-          email: 'subscriber@example.com',
-          custom_attributes: { 'name' => 'John Doe', 'first_name' => 'John', 'last_name' => 'Doe' }
+          email: "subscriber@example.com",
+          custom_attributes: { "name" => "John Doe", "first_name" => "John", "last_name" => "Doe" }
         )
       end
 
@@ -333,7 +333,7 @@ class CampaignsController < ApplicationController
                                  .limit(10)
 
     results = subscribers.map do |subscriber|
-      display_name = subscriber.custom_attributes&.dig('name') || subscriber.custom_attributes&.dig('first_name')
+      display_name = subscriber.custom_attributes&.dig("name") || subscriber.custom_attributes&.dig("first_name")
       display_name = "#{display_name} (#{subscriber.email})" if display_name
       display_name ||= subscriber.email
 

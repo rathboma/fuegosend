@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # Disable public registration - users must be invited
-  devise_for :users, skip: [:registrations]
+  devise_for :users, skip: [ :registrations ]
 
   # Public invitation acceptance (no auth required)
   get "invitations/:token/accept", to: "invitations#accept", as: :accept_invitation
@@ -78,24 +78,24 @@ Rails.application.routes.draw do
         get :preview
       end
     end
-    resources :images, only: [:create]
+    resources :images, only: [ :create ]
 
     # Team management
-    resources :team_members, only: [:index, :update, :destroy]
-    resources :invitations, only: [:create, :destroy] do
+    resources :team_members, only: [ :index, :update, :destroy ]
+    resources :invitations, only: [ :create, :destroy ] do
       collection do
         get :pending
       end
     end
 
-    resource :account, only: [:show, :edit, :update]
+    resource :account, only: [ :show, :edit, :update ]
   end
 
   # API v1 - RESTful API with bearer token authentication
   namespace :api do
     namespace :v1 do
       # Subscribers
-      resources :subscribers, only: [:index, :show, :create, :update, :destroy] do
+      resources :subscribers, only: [ :index, :show, :create, :update, :destroy ] do
         member do
           post :unsubscribe
           post :resubscribe
@@ -103,7 +103,7 @@ Rails.application.routes.draw do
       end
 
       # Lists
-      resources :lists, only: [:index, :show, :create, :update, :destroy] do
+      resources :lists, only: [ :index, :show, :create, :update, :destroy ] do
         member do
           get :subscribers
           post :subscribers, action: :add_subscriber
@@ -112,7 +112,7 @@ Rails.application.routes.draw do
       end
 
       # Segments
-      resources :segments, only: [:index, :show, :create, :update, :destroy] do
+      resources :segments, only: [ :index, :show, :create, :update, :destroy ] do
         member do
           get :subscribers
           post :refresh
@@ -120,7 +120,7 @@ Rails.application.routes.draw do
       end
 
       # Campaigns
-      resources :campaigns, only: [:index, :show, :create, :update, :destroy] do
+      resources :campaigns, only: [ :index, :show, :create, :update, :destroy ] do
         member do
           post :schedule
           post :send_now
@@ -132,10 +132,10 @@ Rails.application.routes.draw do
       end
 
       # Templates
-      resources :templates, only: [:index, :show, :create, :update, :destroy]
+      resources :templates, only: [ :index, :show, :create, :update, :destroy ]
 
       # API Keys
-      resources :api_keys, only: [:index, :show, :create, :update, :destroy] do
+      resources :api_keys, only: [ :index, :show, :create, :update, :destroy ] do
         member do
           post :revoke
         end

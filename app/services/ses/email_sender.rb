@@ -28,7 +28,7 @@ module Ses
         send_params = {
           source: "#{campaign.from_name} <#{campaign.from_email}>",
           destination: {
-            to_addresses: [subscriber.email]
+            to_addresses: [ subscriber.email ]
           },
           message: {
             subject: {
@@ -46,7 +46,7 @@ module Ses
               }
             }
           },
-          reply_to_addresses: campaign.reply_to_email.present? ? [campaign.reply_to_email] : []
+          reply_to_addresses: campaign.reply_to_email.present? ? [ campaign.reply_to_email ] : []
         }
 
         # Add configuration set if present (for tracking bounces/complaints)

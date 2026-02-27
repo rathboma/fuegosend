@@ -13,6 +13,6 @@ class CreateInvitations < ActiveRecord::Migration[8.1]
     end
 
     add_index :invitations, :token, unique: true
-    add_index :invitations, [:account_id, :email]
+    add_index :invitations, [ :account_id, :email ]
   end
 end

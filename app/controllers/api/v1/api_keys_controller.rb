@@ -15,9 +15,9 @@ module Api
 
         render json: {
           api_keys: @api_keys.as_json(
-            only: [:id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at],
+            only: [ :id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at ],
             include: {
-              user: { only: [:id, :email, :first_name, :last_name] }
+              user: { only: [ :id, :email, :first_name, :last_name ] }
             }
           ),
           meta: pagination_meta(@api_keys)
@@ -30,9 +30,9 @@ module Api
 
         render json: {
           api_key: @api_key.as_json(
-            only: [:id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at],
+            only: [ :id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at ],
             include: {
-              user: { only: [:id, :email, :first_name, :last_name] }
+              user: { only: [ :id, :email, :first_name, :last_name ] }
             }
           )
         }
@@ -47,7 +47,7 @@ module Api
           # Return the full token only on creation (it won't be shown again)
           render json: {
             api_key: @api_key.as_json(
-              only: [:id, :name, :last_4, :expires_at, :active, :created_at]
+              only: [ :id, :name, :last_4, :expires_at, :active, :created_at ]
             ),
             token: @api_key.token, # Only available on creation
             message: "API key created successfully. Save this token securely - it won't be shown again."
@@ -67,7 +67,7 @@ module Api
         if @api_key.update(update_params)
           render json: {
             api_key: @api_key.as_json(
-              only: [:id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at]
+              only: [ :id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at ]
             )
           }
         else
@@ -90,7 +90,7 @@ module Api
 
         render json: {
           api_key: @api_key.as_json(
-            only: [:id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at]
+            only: [ :id, :name, :last_4, :last_used_at, :expires_at, :active, :created_at ]
           ),
           message: "API key revoked successfully"
         }
