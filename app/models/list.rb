@@ -8,9 +8,11 @@ class List < ApplicationRecord
   validates :name, presence: true
   validate :account_can_create_list, on: :create
 
-  # Get active subscribers
+  # Get active subscribers (excludes unsubscribed, bounced, and complained)
   def active_subscribers
-    subscribers.where(status: "active")
+    subscribers
+      .active  # Use scope from Subscriber model
+      .where.not(status: ["bounced", "complained", "unsubscribed"])
       .joins(:list_subscriptions)
       .where(list_subscriptions: { status: "active", list_id: id })
   end
